@@ -1,0 +1,27 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: user-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/dubbo_demo?useSSL=false&serverTimezone=UTC
+    username: root
+    password: 123456
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    host: localhost
+    port: 6379
+
+dubbo:
+  application:
+    name: user-service
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    address: zookeeper://localhost:2181
+
+jwt:
+  expiration: 86400000
+  secret: your-secret-key-should-be-at-least-256-bits-long
