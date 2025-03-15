@@ -3,6 +3,7 @@ package com.example.auth.service;
 import com.example.common.dto.LoginRequest;
 import com.example.common.dto.LoginResponse;
 import com.example.common.entity.User;
+import com.example.common.exception.BusinessException;
 import com.example.common.service.UserService;
 import com.example.common.util.JwtUtil;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -36,9 +37,9 @@ public class AuthServiceImpl implements AuthService {
 //        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
 //            throw new RuntimeException("Invalid username or password");
 //        }
-        if (user == null || !request.getPassword().equals(user.getPassword())){
-            System.out.println("Invalid username or password");
-            
+
+        if (user == null || !request.getPassword().equals(user.getPassword())) {
+            throw new BusinessException(401,"用户名或密码错误");
         }
 
         Map<String, Object> claims = new HashMap<>();
