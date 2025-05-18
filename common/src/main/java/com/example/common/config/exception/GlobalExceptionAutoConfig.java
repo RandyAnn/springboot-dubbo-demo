@@ -1,4 +1,4 @@
-package com.example.common.exception;
+package com.example.common.config.exception;
 
 
 import org.springframework.context.annotation.Configuration;
