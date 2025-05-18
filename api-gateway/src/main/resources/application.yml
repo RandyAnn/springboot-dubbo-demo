@@ -10,6 +10,7 @@ jwt:
   secret: your-secret-key-should-be-at-least-256-bits-long
   expiration: 86400000
 
+
 dubbo:
   application:
     name: api-gateway
@@ -18,3 +19,14 @@ dubbo:
     port: -1
   registry:
     address: zookeeper://localhost:2181
+  provider:
+    version: 3.1.0    # 服务提供者使用的版本
+  consumer:
+    version: 3.1.0    # 服务消费者默认使用的版本
+
+# 添加日志配置
+logging:
+  level:
+    com.example.*: info
+    com.example.common.cache: warn
+    com.example.common.event.cache: warn

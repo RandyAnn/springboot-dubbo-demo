@@ -1,0 +1,45 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: diet-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/dubbo_demo?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*.xml
+  type-aliases-package: com.example.common.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+# 添加JWT配置
+jwt:
+  expiration: 86400000
+  secret: your-secret-key-should-be-at-least-256-bits-long
+
+dubbo:
+  application:
+    name: ${spring.application.name}
+  protocol:
+    name: dubbo
+    port: 20885
+  registry:
+    address: zookeeper://127.0.0.1:2181
+  scan:
+    base-packages: com.example.dietservice.service
+  provider:
+    version: 3.1.0    # 服务提供者使用的版本
+  consumer:
+    version: 3.1.0    # 服务消费者默认使用的版本
+
+# 添加日志配置
+logging:
+  level:
+    com.example.*: INFO
+    com.example.common.cache: WARN
+    com.example.common.event.cache: WARN

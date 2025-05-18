@@ -1,0 +1,53 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: file-service
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  # 添加Redis配置
+  redis:
+    host: localhost
+    port: 6379
+
+
+# Cloudflare R2 配置
+cloudflare:
+  r2:
+    access-key: ${R2_ACCESS_KEY}
+    secret-key: ${R2_SECRET_KEY}
+    endpoint: ${R2_ENDPOINT}
+    region: auto
+    bucket-name: ${R2_BUCKET:user-avatar}
+    allowed-types: jpg,jpeg,png,gif,webp
+    # 可选: CDN URL前缀，如果配置了公开访问的R2桶
+    # 虚拟主机风格的格式可能是：https://[custom-domain]/ 或 https://[bucket-name].[r2-domain]/
+    # cdn-url: https://your-bucket.your-domain.com
+
+# 添加JWT配置
+jwt:
+  expiration: 86400000
+  secret: your-secret-key-should-be-at-least-256-bits-long
+
+dubbo:
+  application:
+    name: file-service
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    address: zookeeper://localhost:2181
+  provider:
+    version: 3.1.0    # 服务提供者使用的版本
+  consumer:
+    version: 3.1.0    # 服务消费者默认使用的版本
+
+# 添加日志配置
+logging:
+  level:
+    com.example.*: info
+    com.example.common.cache: warn
+    com.example.common.event.cache: warn

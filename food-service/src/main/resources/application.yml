@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: food-service
+  datasource:
+    url: "jdbc:mysql://localhost:3306/dubbo_demo?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai"
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    host: localhost
+    port: 6379
+
+mybatis-plus:
+  mapper-locations: "classpath:mapper/*.xml"
+  type-aliases-package: com.example.common.entity
+  configuration:
+    map-underscore-to-camel-case: true
+
+dubbo:
+  application:
+    name: food-service
+  protocol:
+    name: dubbo
+    port: -1
+  registry:
+    address: "zookeeper://127.0.0.1:2181"
+  provider:
+    version: 3.1.0    # 服务提供者使用的版本
+  consumer:
+    version: 3.1.0    # 服务消费者默认使用的版本
+
+server:
+  port: 8087
+
+# JWT配置
+jwt:
+  secret: your-secret-key-should-be-at-least-256-bits-long
+  expiration: 86400000
+
+logging:
+  level:
+    com.example.*: info
+    com.example.common.cache: warn
+    com.example.common.event.cache: warn
