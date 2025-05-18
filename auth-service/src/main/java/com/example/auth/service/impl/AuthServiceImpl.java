@@ -1,12 +1,18 @@
-package com.example.auth.service;
+package com.example.auth.service.impl;
 
-import com.example.common.dto.LoginRequest;
-import com.example.common.dto.LoginResponse;
-import com.example.common.dto.WechatLoginRequest;
+import com.example.auth.service.AuthService;
+import com.example.common.command.UserUpdateCommand;
+import com.example.common.dto.LoginRequestDTO;
+import com.example.common.dto.LoginResponseDTO;
+import com.example.common.dto.PasswordChangeDTO;
+import com.example.common.dto.UserInfoDTO;
+import com.example.common.dto.WechatLoginRequestDTO;
 import com.example.common.entity.User;
 import com.example.common.exception.BusinessException;
 import com.example.common.service.UserService;
 import com.example.common.util.JwtUtil;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +22,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -25,51 +30,160 @@ import java.util.UUID;
 @DubboService
 public class AuthServiceImpl implements AuthService {
 
+    @Value("${wechat.appid}")
+    private String appId;
+
+    @Value("${wechat.secret}")
+    private String appSecret;
+
+    @Value("${wechat.login-url}")
+    private String loginUrl;
+
     @DubboReference
     private UserService userService;
 
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final RestTemplate restTemplate;
-    
-    @Value("${wechat.appid}")
-    private String appId;
-    
-    @Value("${wechat.secret}")
-    private String appSecret;
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    public AuthServiceImpl(PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public AuthServiceImpl(PasswordEncoder passwordEncoder, JwtUtil jwtUtil, RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }
 
-    @Override
-    public LoginResponse login(LoginRequest request) {
-        User user = userService.getUserByUsername(request.getUsername());
+//    @Override
+//    public LoginResponse login(LoginRequest request) {
+//        // 根据登录类型调用相应的登录方法
+//        if (request.getLoginType() == LoginRequest.LoginType.ADMIN) {
+//            return adminLogin(request);
+//        } else if (request.getLoginType() == LoginRequest.LoginType.USER) {
+//            return userLogin(request);
+//        }
+//        throw new BusinessException(400, "无效的登录类型");
+//    }
 
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BusinessException(401,"用户名或密码错误");
+    @Override
+    public LoginResponseDTO adminLogin(LoginRequestDTO request) {
+        if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
+            throw new BusinessException(400, "用户名不能为空");
         }
-        
+
+        UserInfoDTO userInfo = userService.getUserByUsername(request.getUsername());
+
+        if (userInfo == null) {
+            throw new BusinessException(401, "用户名或密码错误");
+        }
+
+        // 验证用户密码
+        if (!userService.verifyPassword(request.getUsername(), request.getPassword())) {
+            throw new BusinessException(401, "用户名或密码错误");
+        }
+
+        // 验证用户角色
+        if (!"ADMIN".equals(userInfo.getRole())) {
+            throw new BusinessException(403, "该账号不是管理员账号");
+        }
+
         // 检查用户状态
-        if (user.getStatus() != null && user.getStatus() == 0) {
+        if (userInfo.getStatus() != null && userInfo.getStatus() == 0) {
             throw new BusinessException(403, "账号已被封禁，请联系管理员");
         }
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("username", user.getUsername());
-        claims.put("role", user.getRole());
+        return generateToken(userInfo);
+    }
 
-        String token = jwtUtil.generateToken(claims, user.getUsername());
+    @Override
+    public LoginResponseDTO userLogin(LoginRequestDTO request) {
+        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+            throw new BusinessException(400, "邮箱不能为空");
+        }
 
-        LoginResponse response = new LoginResponse();
-        response.setToken(token);
-        response.setUsername(user.getUsername());
-        response.setRole(user.getRole());
+        UserInfoDTO userInfo = userService.getUserByEmail(request.getEmail());
 
-        return response;
+        if (userInfo == null) {
+            throw new BusinessException(401, "邮箱或密码错误");
+        }
+
+        // 验证用户密码
+        if (!userService.verifyPassword(request.getEmail(), request.getPassword())) {
+            throw new BusinessException(401, "邮箱或密码错误");
+        }
+
+        // 验证用户角色
+        if (!"USER".equals(userInfo.getRole())) {
+            throw new BusinessException(403, "该账号不是普通用户账号");
+        }
+
+        // 检查用户状态
+        if (userInfo.getStatus() != null && userInfo.getStatus() == 0) {
+            throw new BusinessException(403, "账号已被封禁，请联系管理员");
+        }
+
+        return generateToken(userInfo);
+    }
+
+    @Override
+    public LoginResponseDTO wechatLogin(WechatLoginRequestDTO request) {
+        try {
+            // 构建请求微信API的URL
+            String url = String.format("%s?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
+                    loginUrl, appId, appSecret, request.getCode());
+
+            // 发送请求到微信API
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+            // 解析微信返回的JSON数据
+            JsonNode rootNode = objectMapper.readTree(response.getBody());
+
+            // 检查微信返回是否有错误
+            if (rootNode.has("errcode") && rootNode.get("errcode").asInt() != 0) {
+                throw new BusinessException(401, "微信登录失败: " + rootNode.get("errmsg").asText());
+            }
+
+            // 获取用户的openid
+            String openid = rootNode.get("openid").asText();
+
+            // 通过openid查询用户
+            UserInfoDTO userInfo = userService.getUserByOpenid(openid);
+
+            // 如果用户不存在，创建新用户
+            if (userInfo == null) {
+                // 创建UserUpdateCommand对象
+                UserUpdateCommand command = new UserUpdateCommand();
+                // 生成随机用户名
+                command.setUsername("wx_" + UUID.randomUUID().toString().substring(0, 8));
+                // 设置随机密码
+                String randomPassword = UUID.randomUUID().toString();
+                command.setPassword(randomPassword); // 密码会在service层加密
+                // 设置角色
+                command.setRole("USER");
+                // 设置email避免数据库错误
+                command.setEmail(openid + "@wx.placeholder.com");
+                // 保存openid
+                command.setOpenid(openid);
+
+                // 创建用户
+                userInfo = userService.createUser(command);
+            }
+
+            // 检查用户状态
+            if (userInfo.getStatus() != null && userInfo.getStatus() == 0) {
+                throw new BusinessException(403, "账号已被封禁，请联系管理员");
+            }
+
+            // 生成token并返回
+            return generateToken(userInfo);
+
+        } catch (Exception e) {
+            if (e instanceof BusinessException) {
+                throw (BusinessException) e;
+            }
+            throw new BusinessException(500, "微信登录过程中发生错误: " + e.getMessage());
+        }
     }
 
     @Override
@@ -77,80 +191,66 @@ public class AuthServiceImpl implements AuthService {
         jwtUtil.blacklistToken(token);
     }
 
+    /**
+     * 修改用户密码
+     */
     @Override
-    public LoginResponse wechatLogin(WechatLoginRequest request) {
-        // 1. 通过code获取微信access_token和openid
-        String url = "https://api.weixin.qq.com/sns/oauth2/access_token" +
-                "?appid=" + appId +
-                "&secret=" + appSecret +
-                "&code=" + request.getCode() +
-                "&grant_type=authorization_code";
-        
-        ResponseEntity<Map> tokenResponse = restTemplate.getForEntity(url, Map.class);
-        Map<String, Object> tokenInfo = tokenResponse.getBody();
-        
-        if (tokenInfo.containsKey("errcode")) {
-            throw new BusinessException(400, "微信授权失败: " + tokenInfo.get("errmsg"));
+    public boolean changePassword(PasswordChangeDTO request) throws BusinessException {
+        if (request == null) {
+            throw new BusinessException(400, "请求参数不能为空");
         }
-        
-        String openid = (String) tokenInfo.get("openid");
-        String accessToken = (String) tokenInfo.get("access_token");
-        String unionid = tokenInfo.containsKey("unionid") ? (String) tokenInfo.get("unionid") : null;
-        
-        // 2. 获取微信用户信息
-        String userInfoUrl = "https://api.weixin.qq.com/sns/userinfo" +
-                "?access_token=" + accessToken +
-                "&openid=" + openid +
-                "&lang=zh_CN";
-        
-        ResponseEntity<Map> userInfoResponse = restTemplate.getForEntity(userInfoUrl, Map.class);
-        Map<String, Object> userInfo = userInfoResponse.getBody();
-        
-        if (userInfo.containsKey("errcode")) {
-            throw new BusinessException(400, "获取微信用户信息失败: " + userInfo.get("errmsg"));
+
+        if (request.getUserId() == null) {
+            throw new BusinessException(400, "用户ID不能为空");
         }
-        
-        String nickname = (String) userInfo.get("nickname");
-        String avatarUrl = (String) userInfo.get("headimgurl");
-        
-        // 3. 查询用户是否已存在
-        User user = userService.getUserByOpenid(openid);
-        
-        // 4. 用户不存在则创建新用户
-        if (user == null) {
-            user = new User();
-            user.setOpenid(openid);
-            user.setUnionid(unionid);
-            user.setNickname(nickname);
-            user.setAvatarUrl(avatarUrl);
-            user.setUsername("wx_" + UUID.randomUUID().toString().substring(0, 8));
-            user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString())); // 随机密码
-            user.setRole("USER");
-            user.setStatus(1); // 默认启用
-            user.setLoginType(1); // 微信登录
-            user.setCreateTime(new Date());
-            
-            user = userService.createUser(user);
+
+        if (request.getOldPassword() == null || request.getOldPassword().isEmpty()) {
+            throw new BusinessException(400, "旧密码不能为空");
         }
-        
-        // 5. 检查用户状态
-        if (user.getStatus() != null && user.getStatus() == 0) {
-            throw new BusinessException(403, "账号已被封禁，请联系管理员");
+
+        if (request.getNewPassword() == null || request.getNewPassword().isEmpty()) {
+            throw new BusinessException(400, "新密码不能为空");
         }
-        
-        // 6. 生成JWT令牌
+
+        // 获取用户信息
+        UserInfoDTO userInfo = userService.getUserById(request.getUserId());
+        if (userInfo == null) {
+            throw new BusinessException(404, "用户不存在");
+        }
+
+        // 验证旧密码是否正确
+        String usernameOrEmail = userInfo.getEmail() != null ? userInfo.getEmail() : userInfo.getUsername();
+        if (!userService.verifyPassword(usernameOrEmail, request.getOldPassword())) {
+            throw new BusinessException(401, "旧密码不正确");
+        }
+
+        // 修改密码
+        boolean result = userService.changePassword(request.getUserId(), request.getNewPassword());
+
+        // 如果密码修改成功，则使当前token失效
+        // 注意：这里需要在controller层传入当前的token
+        if (result && request instanceof PasswordChangeDTO && ((PasswordChangeDTO) request).getToken() != null) {
+            logout(((PasswordChangeDTO) request).getToken());
+        }
+
+        return result;
+    }
+
+    // 修改生成token的方法，直接使用UserInfoDTO
+    private LoginResponseDTO generateToken(UserInfoDTO userInfo) {
+        // 生成 JWT claims
         Map<String, Object> claims = new HashMap<>();
-        claims.put("username", user.getUsername());
-        claims.put("role", user.getRole());
-        
-        String token = jwtUtil.generateToken(claims, user.getUsername());
-        
-        // 7. 构建登录响应
-        LoginResponse response = new LoginResponse();
+        claims.put("username", userInfo.getUsername());
+        claims.put("role", userInfo.getRole());
+        claims.put("userId", userInfo.getId());
+
+        String token = jwtUtil.generateToken(claims, userInfo.getUsername());
+
+        // 构建 LoginResponse
+        LoginResponseDTO response = new LoginResponseDTO();
         response.setToken(token);
-        response.setUsername(user.getUsername());
-        response.setRole(user.getRole());
-        
+        response.setUserInfo(userInfo);
+
         return response;
     }
 }

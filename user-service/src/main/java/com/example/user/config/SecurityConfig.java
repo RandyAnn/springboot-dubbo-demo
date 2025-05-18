@@ -1,8 +1,8 @@
 package com.example.user.config;
 
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -14,3 +14,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
+
