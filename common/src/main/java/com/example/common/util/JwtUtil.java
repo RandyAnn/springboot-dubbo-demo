@@ -16,13 +16,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-@Component
 public class JwtUtil {
 
     private final Key key;
     private final RedisTemplate<String, Object> redisTemplate;
     private final long expiration;
-    private static final String JWT_BLACKLIST_PREFIX = "jwt:blacklist:";
+    private static final String JWT_BLACKLIST_PREFIX = "jwt:blacklist:jti:";
 
     @Autowired
     public JwtUtil(@Value("${jwt.secret}") String secret,
@@ -52,22 +51,13 @@ public class JwtUtil {
         return builder.compact();
     }
 
-    public Claims parseToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
     public boolean validateToken(String token) {
         try {
-            // 只解析一次token
             Claims claims = parseToken(token);
 
-            // 提取JWT ID，检查是否在黑名单中
-            String jwtId = claims.getId();
-            if (Boolean.TRUE.equals(redisTemplate.hasKey(JWT_BLACKLIST_PREFIX + jwtId))) {
+            // 获取JWT ID并检查是否在黑名单中
+            String jti = claims.getId();
+            if (jti != null && redisTemplate.opsForValue().get(JWT_BLACKLIST_PREFIX + jti) != null) {
                 return false;
             }
 
@@ -78,27 +68,30 @@ public class JwtUtil {
         }
     }
 
+    public Claims parseToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
     public void blacklistToken(String token) {
-        try {
-            // 解析token获取声明
-            Claims claims = parseToken(token);
-            String jwtId = claims.getId();
-            Date expiration = claims.getExpiration();
+        Claims claims = parseToken(token);
+        String jti = claims.getId();
+        Date expiration = claims.getExpiration();
 
-            // 计算剩余有效期（毫秒）
-            long ttl = expiration.getTime() - System.currentTimeMillis();
+        // 计算剩余有效期（毫秒）
+        long ttl = expiration.getTime() - System.currentTimeMillis();
 
-            // 只有当token还未过期时，才将其加入黑名单
-            if (ttl > 0) {
-                redisTemplate.opsForValue().set(
-                        JWT_BLACKLIST_PREFIX + jwtId,
-                        "1",
-                        ttl,
-                        TimeUnit.MILLISECONDS
-                );
-            }
-        } catch (Exception e) {
-            // 解析失败的token无需加入黑名单
+        // 只有当token还未过期且有JTI时，才将其加入黑名单
+        if (ttl > 0 && jti != null) {
+            redisTemplate.opsForValue().set(
+                    JWT_BLACKLIST_PREFIX + jti,
+                    "blacklisted",
+                    ttl,
+                    TimeUnit.MILLISECONDS
+            );
         }
     }
 }

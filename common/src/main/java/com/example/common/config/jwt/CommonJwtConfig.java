@@ -1,4 +1,4 @@
-package com.example.common.config;
+package com.example.common.config.jwt;
 
 import com.example.common.util.JwtUtil;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

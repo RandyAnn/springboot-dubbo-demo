@@ -1,3 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.example.common.config.CommonAutoConfiguration,\
-com.example.common.exception.GlobalExceptionAutoConfiguration
+com.example.common.config.CommonAutoConfiguration

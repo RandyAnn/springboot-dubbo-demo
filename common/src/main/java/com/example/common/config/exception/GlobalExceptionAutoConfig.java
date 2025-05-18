@@ -6,5 +6,5 @@ import org.springframework.context.annotation.ComponentScan;
 
 @Configuration
 @ComponentScan(basePackages = "com.example.common.exception")
-public class GlobalExceptionAutoConfiguration {
+public class GlobalExceptionAutoConfig {
 }
