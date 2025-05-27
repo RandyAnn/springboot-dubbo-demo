@@ -60,6 +60,9 @@ public class NutritionCacheEventListener extends AbstractCacheEventListener {
                     String userAdviceCachePattern = "advice:" + userId + "*";
                     cacheService.evictByPattern(CommonCacheConfig.NUTRITION_STATS_CACHE, userAdviceCachePattern);
 
+                    String userTrendCachePattern = "trend:" + userId + "*";
+                    cacheService.evictByPattern(CommonCacheConfig.NUTRITION_STATS_CACHE, userTrendCachePattern);
+
                     // 清除该用户的营养详情缓存
                     String userDetailsCachePattern = "details:" + userId + "*";
                     cacheService.evictByPattern(CommonCacheConfig.NUTRITION_STATS_CACHE, userDetailsCachePattern);

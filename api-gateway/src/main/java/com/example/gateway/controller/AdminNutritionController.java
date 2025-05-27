@@ -1,4 +1,4 @@
-package com.example.gateway.controller.admin;
+package com.example.gateway.controller;
 
 import com.example.common.command.NutritionAdviceManageCommand;
 import com.example.common.dto.NutritionAdviceManageRequestDTO;

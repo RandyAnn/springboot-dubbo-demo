@@ -85,7 +85,7 @@ public class AdminDashboardController {
             double nutritionComplianceRate = nutritionStatService.calculateNutritionComplianceRate(today);
             stats.put("nutritionComplianceRate", nutritionComplianceRate);
 
-            // 推荐准确率（这里使用模拟数据）
+            // 推荐准确率（模拟数据）
             stats.put("recommendationAccuracy", 95);
 
             // 将结果存入缓存，设置过期时间
