@@ -1,6 +1,7 @@
 package com.example.gateway.controller;
 
 import com.example.common.command.DietRecordQueryCommand;
+import com.example.common.command.UserPageQueryCommand;
 import com.example.common.dto.*;
 import com.example.common.entity.User;
 import com.example.common.response.ApiResponse;
@@ -45,9 +46,9 @@ public class AdminDashboardController {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    private static final String DASHBOARD_STATS_CACHE_KEY = "admin:dashboard:stats";
-    private static final String NUTRITION_TREND_CACHE_KEY = "admin:dashboard:nutrition_trend";
-    private static final String POPULAR_FOODS_CACHE_KEY = "admin:dashboard:popular_foods";
+    private static final String DASHBOARD_STATS_CACHE_KEY = "dashboard:stats";
+    private static final String NUTRITION_TREND_CACHE_KEY = "dashboard:nutrition_trend";
+    private static final String POPULAR_FOODS_CACHE_KEY = "dashboard:popular_foods";
     private static final long DASHBOARD_STATS_CACHE_TTL = 5; // 缓存5分钟
     private static final long NUTRITION_TREND_CACHE_TTL = 30; // 缓存30分钟
     private static final long POPULAR_FOODS_CACHE_TTL = 30; // 缓存30分钟
@@ -72,7 +73,14 @@ public class AdminDashboardController {
 
         try {
             // 获取总用户数
-            PageResult<UserInfoDTO> userPage = userService.getUserInfoPage(1, 1, null, null, null);
+            UserPageQueryCommand userQueryCommand = new UserPageQueryCommand();
+            userQueryCommand.setPage(1);
+            userQueryCommand.setSize(1);
+            userQueryCommand.setStatus(null);
+            userQueryCommand.setKeyword(null);
+            userQueryCommand.setTimeFilter(null);
+
+            PageResult<UserInfoDTO> userPage = userService.getUserInfoPage(userQueryCommand);
             stats.put("totalUsers", userPage.getTotal());
 
             // 获取今日饮食记录数

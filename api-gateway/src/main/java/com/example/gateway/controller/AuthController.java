@@ -1,7 +1,7 @@
 package com.example.gateway.controller;
 
 import com.example.auth.service.AuthService;
-import com.example.common.command.UserUpdateCommand;
+import com.example.common.command.UserCreateCommand;
 import com.example.common.dto.LoginRequestDTO;
 import com.example.common.dto.LoginResponseDTO;
 import com.example.common.dto.PasswordChangeDTO;
@@ -62,10 +62,10 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserInfoDTO>> register(@RequestBody User user) {
-        // 创建UserUpdateCommand对象
-        UserUpdateCommand command = new UserUpdateCommand();
+        // 创建UserCreateCommand对象
+        UserCreateCommand command = new UserCreateCommand();
 
-        // 复制User对象的属性到UserUpdateCommand对象
+        // 复制User对象的属性到UserCreateCommand对象
         command.setUsername(user.getUsername());
         command.setPassword(user.getPassword());
         command.setEmail(user.getEmail());

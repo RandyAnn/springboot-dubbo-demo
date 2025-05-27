@@ -1,5 +1,7 @@
 package com.example.gateway.controller;
 
+import com.example.common.command.UserCreateCommand;
+import com.example.common.command.UserPageQueryCommand;
 import com.example.common.command.UserUpdateCommand;
 import com.example.common.dto.*;
 import com.example.common.entity.User;
@@ -31,13 +33,12 @@ public class AdminUserController {
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<PageResult<UserInfoDTO>>> listUsers(UserQueryDTO queryDTO) {
+        // 创建查询命令对象
+        UserPageQueryCommand command = new UserPageQueryCommand();
+        BeanUtils.copyProperties(queryDTO, command);
+
         // 获取用户分页数据（已在服务层处理头像URL）
-        PageResult<UserInfoDTO> result = userService.getUserInfoPage(
-                queryDTO.getPage(),
-                queryDTO.getSize(),
-                queryDTO.getStatus(),
-                queryDTO.getKeyword(),
-                queryDTO.getTimeFilter());
+        PageResult<UserInfoDTO> result = userService.getUserInfoPage(command);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
@@ -46,9 +47,9 @@ public class AdminUserController {
      */
     @PostMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<UserInfoDTO>> addUser(@RequestBody UserUpdateRequestDTO requestDTO) {
+    public ResponseEntity<ApiResponse<UserInfoDTO>> addUser(@RequestBody UserCreateRequestDTO requestDTO) {
         // 创建命令对象
-        UserUpdateCommand command = new UserUpdateCommand();
+        UserCreateCommand command = new UserCreateCommand();
         BeanUtils.copyProperties(requestDTO, command);
 
         // 强制角色为普通用户

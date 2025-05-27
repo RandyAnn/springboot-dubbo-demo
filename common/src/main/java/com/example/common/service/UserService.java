@@ -1,6 +1,8 @@
 package com.example.common.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.common.command.UserCreateCommand;
+import com.example.common.command.UserPageQueryCommand;
 import com.example.common.command.UserUpdateCommand;
 import com.example.common.dto.UserInfoDTO;
 import com.example.common.entity.User;
@@ -36,7 +38,7 @@ public interface UserService extends IService<User> {
      * @return 创建后的用户信息DTO
      * @throws BusinessException 创建失败时抛出业务异常
      */
-    UserInfoDTO createUser(UserUpdateCommand command) throws BusinessException;
+    UserInfoDTO createUser(UserCreateCommand command) throws BusinessException;
 
     // 原有方法保留
     // List<User> listUsers();
@@ -54,7 +56,7 @@ public interface UserService extends IService<User> {
     /**
      * 分页查询方法，返回UserInfoDTO对象，只包含前端需要的字段
      */
-    PageResult<UserInfoDTO> getUserInfoPage(Integer page, Integer size, Integer status, String keyword, String timeFilter);
+    PageResult<UserInfoDTO> getUserInfoPage(UserPageQueryCommand command);
 
     /**
      * 将User实体转换为UserInfoDTO

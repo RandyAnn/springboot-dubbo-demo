@@ -3,9 +3,9 @@ package com.example.user.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.example.common.command.UserCreateCommand;
+import com.example.common.command.UserPageQueryCommand;
 import com.example.common.command.UserUpdateCommand;
-import com.example.common.cache.CacheService;
-import com.example.common.config.cache.CommonCacheConfig;
 import com.example.common.dto.UserInfoDTO;
 import com.example.common.response.PageResult;
 import com.example.common.entity.User;
@@ -16,6 +16,9 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.BeanUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,25 +40,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-    private final CacheService cacheService;
 
     @DubboReference
     private FileService fileService;
 
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
-    // 缓存过期时间（分钟）
-    private static final long CACHE_EXPIRATION_MINUTES = 30;
-
     @Autowired
     public UserServiceImpl(UserMapper userMapper,
                            PasswordEncoder passwordEncoder,
-                           FileService fileService,
-                           CacheService cacheService) {
+                           FileService fileService) {
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.fileService = fileService;
-        this.cacheService = cacheService;
     }
 
     @Override
@@ -85,7 +82,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
 
     @Override
-    public UserInfoDTO createUser(UserUpdateCommand command) throws BusinessException {
+    public UserInfoDTO createUser(UserCreateCommand command) throws BusinessException {
         if (command == null) {
             throw new BusinessException(400, "创建命令不能为空");
         }
@@ -115,8 +112,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         try {
             userMapper.insert(user);
-            // 清除缓存
-            cacheService.clearAsync(CommonCacheConfig.USER_INFO_CACHE);
         } catch (DuplicateKeyException e) {
             String message = e.getMessage();
             if (message.contains("user.username")) {
@@ -129,7 +124,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 throw new BusinessException(409, "用户信息重复");
             }
         }
-
         return convertToDTO(user);
     }
 
@@ -139,10 +133,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setId(userId);
         user.setStatus(status);
         int count = userMapper.updateById(user);
-        if (count > 0) {
-            // 清除缓存
-            cacheService.clearAsync(CommonCacheConfig.USER_INFO_CACHE);
-        }
         return count > 0;
     }
 
@@ -186,10 +176,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (!success) {
             throw new BusinessException(500, "更新失败");
         }
-
-        // 清除缓存
-        cacheService.clearAsync(CommonCacheConfig.USER_INFO_CACHE);
-
         User updatedUser = this.getById(command.getId());
         return convertToDTO(updatedUser);
     }
@@ -218,73 +204,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return dto;
     }
 
-    /**
-     * 构建缓存键
-     */
-    private String buildCacheKey(Integer page, Integer size, Integer status, String keyword, String timeFilter) {
-        StringBuilder keyBuilder = new StringBuilder("page:");
-        keyBuilder.append("page_").append(page);
-        keyBuilder.append("_size_").append(size);
 
-        if (status != null) {
-            keyBuilder.append("_status_").append(status);
-        }
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            keyBuilder.append("_keyword_").append(keyword);
-        }
-
-        if (timeFilter != null && !timeFilter.trim().isEmpty()) {
-            keyBuilder.append("_timeFilter_").append(timeFilter);
-        }
-
-        return keyBuilder.toString();
-    }
 
     /**
      * 封装分页查询逻辑，返回UserInfoDTO对象
      */
-    @Override
-    public PageResult<UserInfoDTO> getUserInfoPage(Integer page, Integer size, Integer status, String keyword, String timeFilter) {
-        // 构建缓存键
-        String cacheKey = buildCacheKey(page, size, status, keyword, timeFilter);
-
-        // 尝试从缓存获取
-        PageResult<UserInfoDTO> cachedResult = cacheService.get(CommonCacheConfig.USER_INFO_CACHE, cacheKey);
-        if (cachedResult != null) {
-            return cachedResult;
-        }
-
-        // 缓存未命中，从数据库获取
-        log.info("从数据库获取用户分页数据");
-
+    public PageResult<UserInfoDTO> getUserInfoPage(UserPageQueryCommand command) {
         // 创建分页对象
-        Page<User> pageObj = new Page<>(page, size);
+        Page<User> pageObj = new Page<>(command.getPage(), command.getSize());
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
 
         // 状态筛选
-        if (status != null) {
-            queryWrapper.eq("status", status);
+        if (command.getStatus() != null) {
+            queryWrapper.eq("status", command.getStatus());
         }
 
         // 关键词筛选：查询用户名或邮箱包含关键字
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            queryWrapper.and(wrapper -> wrapper.like("username", keyword)
+        if (command.getKeyword() != null && !command.getKeyword().trim().isEmpty()) {
+            queryWrapper.and(wrapper -> wrapper.like("username", command.getKeyword())
                     .or()
-                    .like("email", keyword));
+                    .like("email", command.getKeyword()));
         }
 
         // 时间筛选：根据用户注册时间 (字段：create_time)
-        if (timeFilter != null && !timeFilter.trim().isEmpty()) {
+        if (command.getTimeFilter() != null && !command.getTimeFilter().trim().isEmpty()) {
             Date now = new Date();
-            if ("最近一周".equals(timeFilter)) {
+            if ("最近一周".equals(command.getTimeFilter())) {
                 queryWrapper.ge("create_time", new Date(now.getTime() - 7L * 24 * 60 * 60 * 1000));
-            } else if ("最近一月".equals(timeFilter)) {
+            } else if ("最近一月".equals(command.getTimeFilter())) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(now);
                 cal.add(Calendar.MONTH, -1);
                 queryWrapper.ge("create_time", cal.getTime());
-            } else if ("最近三月".equals(timeFilter)) {
+            } else if ("最近三月".equals(command.getTimeFilter())) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(now);
                 cal.add(Calendar.MONTH, -3);
@@ -305,9 +257,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         // 处理用户头像URL
         result = processUserAvatars(result);
-
-        // 缓存结果
-        cacheService.putAsync(CommonCacheConfig.USER_INFO_CACHE, cacheKey, result, CACHE_EXPIRATION_MINUTES);
 
         return result;
     }
@@ -365,9 +314,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (count <= 0) {
             throw new BusinessException(500, "更新头像失败");
         }
-
-        // 清除缓存
-        cacheService.clearAsync(CommonCacheConfig.USER_INFO_CACHE);
 
         // 如果存在旧头像，则删除
         if (oldAvatarPath != null && !oldAvatarPath.isEmpty()) {
@@ -435,9 +381,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (count <= 0) {
             throw new BusinessException(500, "密码更新失败");
         }
-
-        // 清除缓存
-        cacheService.clearAsync(CommonCacheConfig.USER_INFO_CACHE);
 
         return true;
     }

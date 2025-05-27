@@ -1,6 +1,7 @@
 package com.example.auth.service.impl;
 
 import com.example.auth.service.AuthService;
+import com.example.common.command.UserCreateCommand;
 import com.example.common.command.UserUpdateCommand;
 import com.example.common.dto.LoginRequestDTO;
 import com.example.common.dto.LoginResponseDTO;
@@ -152,8 +153,8 @@ public class AuthServiceImpl implements AuthService {
 
             // 如果用户不存在，创建新用户
             if (userInfo == null) {
-                // 创建UserUpdateCommand对象
-                UserUpdateCommand command = new UserUpdateCommand();
+                // 创建UserCreateCommand对象
+                UserCreateCommand command = new UserCreateCommand();
                 // 生成随机用户名
                 command.setUsername("wx_" + UUID.randomUUID().toString().substring(0, 8));
                 // 设置随机密码
