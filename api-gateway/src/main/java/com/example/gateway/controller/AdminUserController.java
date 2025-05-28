@@ -74,8 +74,14 @@ public class AdminUserController {
         // 复制请求数据到命令对象
         BeanUtils.copyProperties(requestDTO, command);
 
-        // 直接使用命令对象调用服务方法
-        UserInfoDTO updatedUser = userService.updateUser(command);
+        // 调用服务方法更新用户
+        boolean success = userService.updateUser(command);
+        if (!success) {
+            return ResponseEntity.ok(ApiResponse.error(500, "更新失败"));
+        }
+
+        // 管理员接口需要返回完整用户信息，所以查询一次
+        UserInfoDTO updatedUser = userService.getUserById(userId);
         return ResponseEntity.ok(ApiResponse.success(updatedUser));
     }
 

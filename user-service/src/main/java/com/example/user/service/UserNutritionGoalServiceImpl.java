@@ -227,13 +227,4 @@ public class UserNutritionGoalServiceImpl extends ServiceImpl<UserNutritionGoalM
             throw new BusinessException(400, "脂肪目标不能小于0");
         }
     }
-
-    /**
-     * 清除用户营养目标缓存
-     */
-    public void clearNutritionGoalCache(Long userId) {
-        if (userId != null) {
-            cacheService.evict(USER_NUTRITION_GOAL_CACHE, userId);
-        }
-    }
 }

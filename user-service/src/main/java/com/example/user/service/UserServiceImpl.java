@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.common.command.UserCreateCommand;
 import com.example.common.command.UserPageQueryCommand;
 import com.example.common.command.UserUpdateCommand;
+import com.example.common.dto.AvatarResponseDTO;
 import com.example.common.dto.UserInfoDTO;
 import com.example.common.response.PageResult;
 import com.example.common.entity.User;
@@ -137,7 +138,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public UserInfoDTO updateUser(UserUpdateCommand command) throws BusinessException {
+    public boolean updateUser(UserUpdateCommand command) throws BusinessException {
         if (command == null) {
             throw new BusinessException(400, "更新命令不能为空");
         }
@@ -146,38 +147,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(400, "用户ID不能为空");
         }
 
-        // 获取当前用户数据
-        User currentUser = this.getById(command.getId());
-        if (currentUser == null) {
-            throw new BusinessException(404, "用户不存在");
-        }
-
-        // 创建更新实体，只更新允许的字段
+        // 创建更新实体，只设置ID和需要更新的字段
         User updateUser = new User();
         updateUser.setId(command.getId());
 
-        // 只复制非null字段，保留原有值
+        // 只复制非null字段，MyBatis-Plus的updateById会自动忽略null字段
         if (command.getUsername() != null) updateUser.setUsername(command.getUsername());
         if (command.getEmail() != null) updateUser.setEmail(command.getEmail());
+        if (command.getAvatarUrl() != null) updateUser.setAvatarUrl(command.getAvatarUrl());
         if (command.getRole() != null) updateUser.setRole(command.getRole());
         if (command.getStatus() != null) updateUser.setStatus(command.getStatus());
 
-        // 保留原有头像URL，除非明确要更新
-        if (command.getAvatarUrl() != null) {
-            updateUser.setAvatarUrl(command.getAvatarUrl());
-        } else {
-            updateUser.setAvatarUrl(currentUser.getAvatarUrl());
+        // 如果需要更新密码，单独处理
+        if (command.getPassword() != null && !command.getPassword().isEmpty()) {
+            updateUser.setPassword(passwordEncoder.encode(command.getPassword()));
         }
 
-        // 强制设置角色为普通用户（如果是管理员调用，可以在调用前设置不同的角色）
-        updateUser.setRole("USER");
-
-        boolean success = this.updateById(updateUser);
-        if (!success) {
-            throw new BusinessException(500, "更新失败");
-        }
-        User updatedUser = this.getById(command.getId());
-        return convertToDTO(updatedUser);
+        // 执行更新，MyBatis-Plus只会更新非null字段
+        return this.updateById(updateUser);
     }
 
     @Override
@@ -383,5 +370,78 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         return true;
+    }
+
+    /**
+     * 生成用户头像上传URL
+     */
+    @Override
+    public AvatarResponseDTO generateAvatarUploadUrl(Long userId, String contentType) throws BusinessException {
+        if (userId == null || userId <= 0) {
+            throw new BusinessException(400, "无效的用户ID");
+        }
+
+        if (contentType == null || contentType.isEmpty()) {
+            throw new BusinessException(400, "文件类型不能为空");
+        }
+
+        try {
+            // 生成上传URL（有效期15分钟）
+            String presignedUrlWithFilename = fileService.generateUploadPresignedUrl(
+                    userId, "avatar", contentType, 15);
+
+            // 分离URL和文件名
+            String[] parts = presignedUrlWithFilename.split(":::");
+            String presignedUrl = parts[0];
+            String fileName = parts[1];
+
+            // 更新用户头像文件名（此时还未上传完成，但我们已经知道文件名了）
+            this.updateUserAvatar(userId, fileName);
+
+            // 构建响应
+            return AvatarResponseDTO.createUploadResponse(presignedUrl, fileName);
+        } catch (Exception e) {
+            log.error("生成头像上传URL失败: " + e.getMessage(), e);
+            throw new BusinessException(500, "生成上传URL失败");
+        }
+    }
+
+    /**
+     * 生成用户头像下载URL
+     */
+    @Override
+    public AvatarResponseDTO generateAvatarDownloadUrl(Long userId) throws BusinessException {
+        if (userId == null || userId <= 0) {
+            throw new BusinessException(400, "无效的用户ID");
+        }
+
+        try {
+            // 获取用户信息
+            UserInfoDTO user = this.getUserById(userId);
+            if (user == null) {
+                throw new BusinessException(404, "用户不存在");
+            }
+
+            // 如果用户有头像，则生成下载URL
+            if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) {
+                try {
+                    // 生成下载URL（有效期60分钟）
+                    String downloadUrl = fileService.generateDownloadPresignedUrl(user.getAvatarUrl(), 60);
+                    return AvatarResponseDTO.createDownloadResponse(downloadUrl, user.getAvatarUrl());
+                } catch (Exception e) {
+                    log.error("生成头像下载URL失败: " + e.getMessage(), e);
+                    // 如果生成URL失败，返回空URL
+                    return AvatarResponseDTO.createDownloadResponse("", "");
+                }
+            } else {
+                // 如果用户没有头像，则返回空URL
+                return AvatarResponseDTO.createDownloadResponse("", "");
+            }
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("生成头像下载URL失败: " + e.getMessage(), e);
+            throw new BusinessException(500, "生成下载URL失败");
+        }
     }
 }

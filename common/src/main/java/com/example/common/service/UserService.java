@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.common.command.UserCreateCommand;
 import com.example.common.command.UserPageQueryCommand;
 import com.example.common.command.UserUpdateCommand;
+import com.example.common.dto.AvatarResponseDTO;
 import com.example.common.dto.UserInfoDTO;
 import com.example.common.entity.User;
 import com.example.common.exception.BusinessException;
@@ -45,13 +46,13 @@ public interface UserService extends IService<User> {
     boolean updateUserStatus(Long userId, Integer status) throws BusinessException;
 
     /**
-     * 使用命令对象更新用户信息，失败时抛出业务异常。
+     * 使用命令对象更新用户信息
      *
      * @param command 用户更新命令对象
-     * @return 更新后的用户信息DTO
-     * @throws BusinessException 更新失败时抛出业务异常
+     * @return 更新是否成功
+     * @throws BusinessException 参数错误时抛出业务异常
      */
-    UserInfoDTO updateUser(UserUpdateCommand command) throws BusinessException;
+    boolean updateUser(UserUpdateCommand command) throws BusinessException;
 
     /**
      * 分页查询方法，返回UserInfoDTO对象，只包含前端需要的字段
@@ -91,6 +92,25 @@ public interface UserService extends IService<User> {
      * @throws BusinessException 修改失败时抛出业务异常
      */
     boolean changePassword(Long userId, String newPassword) throws BusinessException;
+
+    /**
+     * 生成用户头像上传URL
+     *
+     * @param userId 用户ID
+     * @param contentType 文件类型
+     * @return 头像响应DTO
+     * @throws BusinessException 生成失败时抛出业务异常
+     */
+    AvatarResponseDTO generateAvatarUploadUrl(Long userId, String contentType) throws BusinessException;
+
+    /**
+     * 生成用户头像下载URL
+     *
+     * @param userId 用户ID
+     * @return 头像响应DTO
+     * @throws BusinessException 生成失败时抛出业务异常
+     */
+    AvatarResponseDTO generateAvatarDownloadUrl(Long userId) throws BusinessException;
 }
 
 

@@ -6,7 +6,6 @@ import com.example.common.dto.*;
 import com.example.common.entity.UserNutritionGoal;
 import com.example.common.exception.BusinessException;
 import com.example.common.response.ApiResponse;
-import com.example.common.service.FileService;
 import com.example.common.service.UserNutritionGoalService;
 import com.example.common.service.UserService;
 import com.example.common.util.SecurityContextUtil;
@@ -14,8 +13,6 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * 用户控制器，提供普通用户相关的接口
@@ -30,9 +27,6 @@ public class UserController {
     @DubboReference
     private UserNutritionGoalService userNutritionGoalService;
 
-    @DubboReference
-    private FileService fileService;
-
     /**
      * 获取当前用户信息
      */
@@ -45,27 +39,24 @@ public class UserController {
 
     /**
      * 更新用户信息
+     * Controller层只负责：
+     * 1. 获取当前用户ID
+     * 2. 参数校验和转换
+     * 3. 调用Service层
      */
     @PutMapping("/update")
-    public ResponseEntity<ApiResponse<UserInfoDTO>> updateUserInfo(@RequestBody UserUpdateRequestDTO requestDTO) {
+    public ResponseEntity<ApiResponse<Boolean>> updateUserInfo(@RequestBody UserUpdateRequestDTO requestDTO) {
+        // 1. 获取当前用户ID
         Long userId = SecurityContextUtil.getCurrentUserId();
-        UserInfoDTO currentUser = userService.getUserById(userId);
 
-        // 创建命令对象
+        // 2. 创建命令对象并转换参数
         UserUpdateCommand command = UserUpdateCommand.withUserId(userId);
-
-        // 只复制允许修改的字段
+        // 只复制前端传递的字段，null字段不会被复制
         BeanUtils.copyProperties(requestDTO, command);
 
-        // 防止修改敏感字段
-        command.setUsername(currentUser.getUsername());
-        command.setEmail(currentUser.getEmail());
-        command.setRole(currentUser.getRole());
-        command.setStatus(currentUser.getStatus());
-
-        // 直接使用命令对象调用服务方法
-        UserInfoDTO updatedUser = userService.updateUser(command);
-        return ResponseEntity.ok(ApiResponse.success(updatedUser));
+        // 3. 调用Service层处理业务逻辑，直接返回boolean
+        boolean success = userService.updateUser(command);
+        return ResponseEntity.ok(ApiResponse.success(success));
     }
 
     /**
@@ -102,30 +93,20 @@ public class UserController {
 
     /**
      * 生成头像上传URL
-     *
-     * 改为生成预签名URL让客户端直接上传到对象存储
+     * Controller层只负责：
+     * 1. 获取当前用户ID
+     * 2. 参数校验
+     * 3. 调用Service层
      */
     @PostMapping("/avatar/upload-url")
     public ResponseEntity<ApiResponse<AvatarResponseDTO>> generateAvatarUploadUrl(
             @RequestParam("contentType") String contentType) {
         try {
-            // 从认证对象中获取userId
+            // 1. 获取当前用户ID
             Long userId = SecurityContextUtil.getCurrentUserId();
 
-            // 生成上传URL（有效期15分钟）
-            String presignedUrlWithFilename = fileService.generateUploadPresignedUrl(
-                    userId, "avatar", contentType, 15);
-
-            // 分离URL和文件名
-            String[] parts = presignedUrlWithFilename.split(":::");
-            String presignedUrl = parts[0];
-            String fileName = parts[1];
-
-            // 更新用户头像文件名（此时还未上传完成，但我们已经知道文件名了）
-            userService.updateUserAvatar(userId, fileName);
-
-            // 构建响应
-            AvatarResponseDTO response = AvatarResponseDTO.createUploadResponse(presignedUrl, fileName);
+            // 2. 调用Service层处理业务逻辑
+            AvatarResponseDTO response = userService.generateAvatarUploadUrl(userId, contentType);
 
             return ResponseEntity.ok(ApiResponse.success(response));
         } catch (BusinessException e) {
@@ -136,34 +117,23 @@ public class UserController {
 
     /**
      * 获取用户头像URL
-     *
-     * 改为生成预签名的下载URL
+     * Controller层只负责：
+     * 1. 获取当前用户ID
+     * 2. 调用Service层
      */
     @GetMapping("/avatar")
-    public ResponseEntity<ApiResponse<AvatarResponseDTO>> getUserAvatar() {
-        // 从认证对象中获取userId
-        Long userId = SecurityContextUtil.getCurrentUserId();
+    public ResponseEntity<ApiResponse<AvatarResponseDTO>> generateAvatarDownloadUrl() {
+        try {
+            // 1. 获取当前用户ID
+            Long userId = SecurityContextUtil.getCurrentUserId();
 
-        // 获取用户信息
-        UserInfoDTO user = userService.getUserById(userId);
+            // 2. 调用Service层处理业务逻辑
+            AvatarResponseDTO response = userService.generateAvatarDownloadUrl(userId);
 
-        AvatarResponseDTO response;
-
-        // 如果用户有头像，则生成下载URL
-        if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) {
-            try {
-                // 生成下载URL（有效期60分钟）
-                String downloadUrl = fileService.generateDownloadPresignedUrl(user.getAvatarUrl(), 60);
-                response = AvatarResponseDTO.createDownloadResponse(downloadUrl, user.getAvatarUrl());
-            } catch (BusinessException e) {
-                // 如果生成URL失败，返回空URL
-                response = AvatarResponseDTO.createDownloadResponse("", "");
-            }
-        } else {
-            // 如果用户没有头像，则返回空URL
-            response = AvatarResponseDTO.createDownloadResponse("", "");
+            return ResponseEntity.ok(ApiResponse.success(response));
+        } catch (BusinessException e) {
+            return ResponseEntity.status(e.getCode())
+                    .body(ApiResponse.error(e.getCode(), e.getMessage()));
         }
-
-        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
