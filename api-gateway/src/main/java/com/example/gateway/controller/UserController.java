@@ -3,7 +3,6 @@ package com.example.gateway.controller;
 import com.example.common.command.NutritionGoalCommand;
 import com.example.common.command.UserUpdateCommand;
 import com.example.common.dto.*;
-import com.example.common.entity.UserNutritionGoal;
 import com.example.common.exception.BusinessException;
 import com.example.common.response.ApiResponse;
 import com.example.common.service.UserNutritionGoalService;
@@ -63,11 +62,11 @@ public class UserController {
      * 获取用户营养目标
      */
     @GetMapping("/nutrition-goal")
-    public ResponseEntity<ApiResponse<UserNutritionGoal>> getNutritionGoal() {
+    public ResponseEntity<ApiResponse<UserNutritionGoalResponseDTO>> getNutritionGoal() {
         Long userId = SecurityContextUtil.getCurrentUserId();
 
-        // 使用新的方法，它会处理null情况并返回默认值
-        UserNutritionGoal nutritionGoal = userNutritionGoalService.getOrCreateNutritionGoalByUserId(userId);
+        // 获取用户营养目标，如果不存在则创建默认值
+        UserNutritionGoalResponseDTO nutritionGoal = userNutritionGoalService.getNutritionGoal(userId);
 
         return ResponseEntity.ok(ApiResponse.success(nutritionGoal));
     }
@@ -76,7 +75,7 @@ public class UserController {
      * 更新用户营养目标
      */
     @PutMapping("/nutrition-goal")
-    public ResponseEntity<ApiResponse<UserNutritionGoal>> updateNutritionGoal(@RequestBody NutritionGoalRequestDTO requestDTO) {
+    public ResponseEntity<ApiResponse<Boolean>> updateNutritionGoal(@RequestBody NutritionGoalRequestDTO requestDTO) {
         Long userId = SecurityContextUtil.getCurrentUserId();
 
         // 创建命令对象
@@ -86,9 +85,9 @@ public class UserController {
         BeanUtils.copyProperties(requestDTO, command);
 
         // 直接使用命令对象调用服务方法
-        UserNutritionGoal updatedGoal = userNutritionGoalService.saveOrUpdateNutritionGoal(command);
+        boolean success = userNutritionGoalService.UpdateNutritionGoal(command);
 
-        return ResponseEntity.ok(ApiResponse.success(updatedGoal));
+        return ResponseEntity.ok(ApiResponse.success(success));
     }
 
     /**

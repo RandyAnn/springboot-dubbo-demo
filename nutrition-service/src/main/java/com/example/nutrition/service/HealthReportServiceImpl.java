@@ -5,6 +5,7 @@ import com.example.common.cache.CacheService;
 import com.example.common.config.cache.CommonCacheConfig;
 import com.example.common.dto.*;
 import com.example.common.entity.UserNutritionGoal;
+import org.springframework.beans.BeanUtils;
 import com.example.common.service.HealthReportService;
 import com.example.common.service.NutritionStatService;
 import com.example.common.service.UserNutritionGoalService;
@@ -55,8 +56,8 @@ public class HealthReportServiceImpl implements HealthReportService {
             return cachedReport;
         }
 
-        // 获取用户营养目标，使用新的方法确保不会返回null
-        UserNutritionGoal nutritionGoal = userNutritionGoalService.getOrCreateNutritionGoalByUserId(userId);
+        UserNutritionGoalResponseDTO nutritionGoalDTO = userNutritionGoalService.getNutritionGoal(userId);
+        UserNutritionGoal nutritionGoal = convertDTOToEntity(nutritionGoalDTO);
 
         // 获取当前日期的营养统计数据
         NutritionStatDTO currentNutritionStat = nutritionStatService.getDailyNutritionStat(
@@ -215,5 +216,27 @@ public class HealthReportServiceImpl implements HealthReportService {
                 .carbs(0)
                 .fat(0)
                 .build();
+    }
+
+    /**
+     * 将UserNutritionGoalResponseDTO转换为UserNutritionGoal实体
+     */
+    private UserNutritionGoal convertDTOToEntity(UserNutritionGoalResponseDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        UserNutritionGoal entity = new UserNutritionGoal();
+        BeanUtils.copyProperties(dto, entity);
+
+        // 转换LocalDateTime到Date
+        if (dto.getCreatedAt() != null) {
+            entity.setCreatedAt(java.sql.Timestamp.valueOf(dto.getCreatedAt()));
+        }
+        if (dto.getUpdatedAt() != null) {
+            entity.setUpdatedAt(java.sql.Timestamp.valueOf(dto.getUpdatedAt()));
+        }
+
+        return entity;
     }
 }

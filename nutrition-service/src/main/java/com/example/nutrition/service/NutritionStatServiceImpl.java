@@ -9,6 +9,7 @@ import com.example.common.dto.NutritionAdviceDTO;
 import com.example.common.dto.NutritionDetailItemDTO;
 import com.example.common.dto.NutritionStatDTO;
 import com.example.common.dto.NutritionTrendDTO;
+import com.example.common.dto.UserNutritionGoalResponseDTO;
 import com.example.common.entity.DietRecord;
 import com.example.common.entity.DietRecordFood;
 import com.example.common.entity.NutritionAdvice;
@@ -21,6 +22,7 @@ import com.example.nutrition.mapper.NutritionStatMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -78,10 +80,14 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         }
 
         // 查询用户营养目标
-        UserNutritionGoal nutritionGoal = userNutritionGoalService.getNutritionGoalByUserId(userId);
-        if (nutritionGoal == null) {
+        UserNutritionGoalResponseDTO nutritionGoalDTO = userNutritionGoalService.getNutritionGoal(userId);
+        UserNutritionGoal nutritionGoal;
+        if (nutritionGoalDTO == null) {
             // 如果用户没有设置营养目标，使用默认值
             nutritionGoal = createDefaultNutritionGoal(userId);
+        } else {
+            // 将DTO转换为实体对象
+            nutritionGoal = convertDTOToEntity(nutritionGoalDTO);
         }
 
         // 从数据库获取当日所有饮食记录
@@ -207,9 +213,12 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         NutritionStatDTO nutritionStat = getDailyNutritionStat(NutritionStatCommand.of(userId, date));
 
         // 获取用户营养目标
-        UserNutritionGoal nutritionGoal = userNutritionGoalService.getNutritionGoalByUserId(userId);
-        if (nutritionGoal == null) {
+        UserNutritionGoalResponseDTO nutritionGoalDTO = userNutritionGoalService.getNutritionGoal(userId);
+        UserNutritionGoal nutritionGoal;
+        if (nutritionGoalDTO == null) {
             nutritionGoal = createDefaultNutritionGoal(userId);
+        } else {
+            nutritionGoal = convertDTOToEntity(nutritionGoalDTO);
         }
 
         List<NutritionDetailItemDTO> detailList = new ArrayList<>();
@@ -259,9 +268,12 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         NutritionStatDTO nutritionStat = getDailyNutritionStat(NutritionStatCommand.of(userId, date));
 
         // 获取用户营养目标
-        UserNutritionGoal nutritionGoal = userNutritionGoalService.getNutritionGoalByUserId(userId);
-        if (nutritionGoal == null) {
+        UserNutritionGoalResponseDTO nutritionGoalDTO = userNutritionGoalService.getNutritionGoal(userId);
+        UserNutritionGoal nutritionGoal;
+        if (nutritionGoalDTO == null) {
             nutritionGoal = createDefaultNutritionGoal(userId);
+        } else {
+            nutritionGoal = convertDTOToEntity(nutritionGoalDTO);
         }
 
         // 根据与目标的差距生成建议
@@ -333,6 +345,28 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         return goal;
     }
 
+    /**
+     * 将UserNutritionGoalResponseDTO转换为UserNutritionGoal实体
+     */
+    private UserNutritionGoal convertDTOToEntity(UserNutritionGoalResponseDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        UserNutritionGoal entity = new UserNutritionGoal();
+        BeanUtils.copyProperties(dto, entity);
+
+        // 转换LocalDateTime到Date
+        if (dto.getCreatedAt() != null) {
+            entity.setCreatedAt(java.sql.Timestamp.valueOf(dto.getCreatedAt()));
+        }
+        if (dto.getUpdatedAt() != null) {
+            entity.setUpdatedAt(java.sql.Timestamp.valueOf(dto.getUpdatedAt()));
+        }
+
+        return entity;
+    }
+
     @Override
     public double calculateNutritionComplianceRate(LocalDate date) {
         // 构建缓存键
@@ -359,9 +393,12 @@ public class NutritionStatServiceImpl implements NutritionStatService {
             NutritionStatDTO nutritionStat = getDailyNutritionStatNoCache(userId, date);
 
             // 获取用户营养目标
-            UserNutritionGoal nutritionGoal = userNutritionGoalService.getNutritionGoalByUserId(userId);
-            if (nutritionGoal == null) {
+            UserNutritionGoalResponseDTO nutritionGoalDTO = userNutritionGoalService.getNutritionGoal(userId);
+            UserNutritionGoal nutritionGoal;
+            if (nutritionGoalDTO == null) {
                 nutritionGoal = createDefaultNutritionGoal(userId);
+            } else {
+                nutritionGoal = convertDTOToEntity(nutritionGoalDTO);
             }
 
             // 检查是否达标（这里简化为热量、蛋白质、碳水和脂肪都达到目标的80%以上）
@@ -544,10 +581,13 @@ public class NutritionStatServiceImpl implements NutritionStatService {
      */
     private NutritionStatDTO getDailyNutritionStatNoCache(Long userId, LocalDate date) {
         // 查询用户营养目标
-        UserNutritionGoal nutritionGoal = userNutritionGoalService.getNutritionGoalByUserId(userId);
-        if (nutritionGoal == null) {
+        UserNutritionGoalResponseDTO nutritionGoalDTO = userNutritionGoalService.getNutritionGoal(userId);
+        UserNutritionGoal nutritionGoal;
+        if (nutritionGoalDTO == null) {
             // 如果用户没有设置营养目标，使用默认值
             nutritionGoal = createDefaultNutritionGoal(userId);
+        } else {
+            nutritionGoal = convertDTOToEntity(nutritionGoalDTO);
         }
 
         // 从数据库获取当日所有饮食记录
