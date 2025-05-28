@@ -8,8 +8,9 @@ import com.example.common.command.FoodImageUpdateCommand;
 import com.example.common.command.FoodQueryCommand;
 import com.example.common.command.FoodSaveCommand;
 import com.example.common.command.FoodUpdateCommand;
-import com.example.common.cache.CacheService;
 import com.example.common.config.cache.CommonCacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import com.example.common.dto.FoodCategoryDTO;
 import com.example.common.dto.FoodItemDTO;
 import com.example.common.dto.FoodQueryDTO;
@@ -44,11 +45,7 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
 
     private static final Logger logger = LoggerFactory.getLogger(FoodServiceImpl.class);
 
-    // 缓存过期时间（小时）
-    private static final long CACHE_EXPIRATION_HOURS = 24; // 食物数据缓存24小时
-
     private final FoodMapper foodMapper;
-    private final CacheService cacheService;
 
     @DubboReference
     private FileService fileService;
@@ -57,22 +54,14 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
     private FoodCategoryService foodCategoryService;
 
     @Autowired
-    public FoodServiceImpl(FoodMapper foodMapper, CacheService cacheService) {
+    public FoodServiceImpl(FoodMapper foodMapper) {
         this.foodMapper = foodMapper;
-        this.cacheService = cacheService;
     }
 
     @Override
+    @Cacheable(value = "food", key = "'page_' + #command.current + '_size_' + #command.size + '_category_' + (#command.categoryId ?: 'null')",
+               condition = "#command.keyword == null or #command.keyword.trim().isEmpty()")
     public PageResult<FoodItemDTO> queryFoodsByPage(FoodQueryCommand command) {
-        // 构建缓存键
-        String cacheKey = buildCacheKey(command);
-
-        // 尝试从缓存获取
-        PageResult<FoodItemDTO> cachedResult = cacheService.get(CommonCacheConfig.FOOD_INFO_CACHE, cacheKey);
-        if (cachedResult != null) {
-            return cachedResult;
-        }
-
         // 构建查询条件
         LambdaQueryWrapper<Food> wrapper = new LambdaQueryWrapper<>();
 
@@ -97,36 +86,8 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
 
-        PageResult<FoodItemDTO> result = PageResult.of(records, page.getTotal(), command.getCurrent(), command.getSize());
-
-        // 异步缓存结果
-        cacheService.put(CommonCacheConfig.FOOD_INFO_CACHE, cacheKey, result, CACHE_EXPIRATION_HOURS * 60);
-
-        return result;
+        return PageResult.of(records, page.getTotal(), command.getCurrent(), command.getSize());
     }
-
-
-
-    /**
-     * 构建缓存键
-     */
-    private String buildCacheKey(FoodQueryCommand command) {
-        StringBuilder keyBuilder = new StringBuilder("list:");
-        keyBuilder.append("page_").append(command.getCurrent());
-        keyBuilder.append("_size_").append(command.getSize());
-
-        if (command.getCategoryId() != null) {
-            keyBuilder.append("_category_").append(command.getCategoryId());
-        }
-
-        if (StringUtils.isNotBlank(command.getKeyword())) {
-            keyBuilder.append("_keyword_").append(command.getKeyword());
-        }
-
-        return keyBuilder.toString();
-    }
-
-
 
     @Override
     public FoodItemDTO getFoodById(Integer id) {
@@ -134,13 +95,6 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
             return null;
         }
 
-        // 尝试从缓存获取
-        FoodItemDTO cachedFood = cacheService.get(CommonCacheConfig.FOOD_INFO_CACHE, id);
-        if (cachedFood != null) {
-            return cachedFood;
-        }
-
-        logger.debug("从数据库获取食物信息: id={}", id);
         Food food = this.getById(id);
         if (food == null) {
             return null;
@@ -149,38 +103,17 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
         // 转换为DTO
         FoodItemDTO foodDTO = convertToDTO(food);
 
-        // 异步缓存结果
-        cacheService.put(CommonCacheConfig.FOOD_INFO_CACHE, id, foodDTO, CACHE_EXPIRATION_HOURS * 60);
-
         return foodDTO;
     }
 
-
-
     @Override
     public List<String> getAllCategories() {
-        // 尝试从缓存获取
-        @SuppressWarnings("unchecked")
-        List<String> cachedCategories = cacheService.get(CommonCacheConfig.FOOD_INFO_CACHE, "categories");
-        if (cachedCategories != null) {
-            return cachedCategories;
-        }
-
-        logger.debug("从数据库获取食物分类列表");
-
-        // 通过FoodCategoryService获取所有分类
-        List<FoodCategoryDTO> categoryDTOs = foodCategoryService.getAllCategories();
-        List<String> categories = categoryDTOs.stream()
+        // 通过FoodCategoryService获取所有分类，然后提取名称
+        List<FoodCategoryDTO> categories = foodCategoryService.getAllCategories();
+        return categories.stream()
                 .map(FoodCategoryDTO::getName)
                 .collect(Collectors.toList());
-
-        // 异步缓存结果
-        cacheService.putAsync(CommonCacheConfig.FOOD_INFO_CACHE, "categories", categories, CACHE_EXPIRATION_HOURS * 60);
-
-        return categories;
     }
-
-
 
     /**
      * 将Food实体转换为DTO
@@ -219,15 +152,13 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
             dto.setImageUrl(food.getImageUrl()); // 可能为null或空字符串
         }
 
-        // 转换数值类型
-        dto.setGrams(parseDoubleOrDefault(food.getGrams(), 0.0));
-        dto.setCalories(parseDoubleOrDefault(food.getCalories(), 0.0));
-        dto.setProtein(parseDoubleOrDefault(food.getProtein(), 0.0));
-        dto.setFat(parseDoubleOrDefault(food.getFat(), 0.0));
-        dto.setCarbs(parseDoubleOrDefault(food.getCarbs(), 0.0));
-
-        // 处理饱和脂肪
-        dto.setSatFat(parseDoubleOrDefault(food.getSatFat(), 0.0));
+        // 直接设置数值类型
+        dto.setGrams(food.getGrams());
+        dto.setCalories(food.getCalories());
+        dto.setProtein(food.getProtein());
+        dto.setFat(food.getFat());
+        dto.setCarbs(food.getCarbs());
+        dto.setSatFat(food.getSatFat());
 
         // 设置描述和单位
         dto.setDesc(food.getMeasure());
@@ -257,13 +188,13 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
 
         food.setImageUrl(dto.getImageUrl());
 
-        // 转换数值类型
-        food.setGrams(dto.getGrams() != null ? String.valueOf(dto.getGrams()) : null);
-        food.setCalories(dto.getCalories() != null ? String.valueOf(dto.getCalories()) : null);
-        food.setProtein(dto.getProtein() != null ? String.valueOf(dto.getProtein()) : null);
-        food.setFat(dto.getFat() != null ? String.valueOf(dto.getFat()) : null);
-        food.setCarbs(dto.getCarbs() != null ? String.valueOf(dto.getCarbs()) : null);
-        food.setSatFat(dto.getSatFat() != null ? String.valueOf(dto.getSatFat()) : null);
+        // 直接设置数值类型
+        food.setGrams(dto.getGrams());
+        food.setCalories(dto.getCalories());
+        food.setProtein(dto.getProtein());
+        food.setFat(dto.getFat());
+        food.setCarbs(dto.getCarbs());
+        food.setSatFat(dto.getSatFat());
 
         return food;
     }
@@ -272,6 +203,7 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
      * 保存食物信息 - 使用Command对象
      */
     @Override
+    @CacheEvict(value = "food", allEntries = true)
     public FoodItemDTO saveFood(FoodSaveCommand command) {
         // 将Command对象转换为实体
         Food food = new Food();
@@ -280,19 +212,15 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
         food.setCategoryId(command.getCategoryId());
         food.setImageUrl(command.getImageUrl());
 
-        // 转换数值类型
-        food.setGrams(command.getGrams() != null ? String.valueOf(command.getGrams()) : null);
-        food.setCalories(command.getCalories() != null ? String.valueOf(command.getCalories()) : null);
-        food.setProtein(command.getProtein() != null ? String.valueOf(command.getProtein()) : null);
-        food.setFat(command.getFat() != null ? String.valueOf(command.getFat()) : null);
-        food.setCarbs(command.getCarbs() != null ? String.valueOf(command.getCarbs()) : null);
-        food.setSatFat(command.getSatFat() != null ? String.valueOf(command.getSatFat()) : null);
+        // 直接设置数值类型
+        food.setGrams(command.getGrams());
+        food.setCalories(command.getCalories());
+        food.setProtein(command.getProtein());
+        food.setFat(command.getFat());
+        food.setCarbs(command.getCarbs());
+        food.setSatFat(command.getSatFat());
 
         this.save(food);
-
-        // 清除缓存
-        cacheService.evictAsync(CommonCacheConfig.FOOD_INFO_CACHE, "categories");
-        cacheService.evictAsync(CommonCacheConfig.FOOD_INFO_CACHE, "list:*");
 
         return convertToDTO(food);
     }
@@ -303,6 +231,7 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
      * 更新食物信息 - 使用Command对象
      */
     @Override
+    @CacheEvict(value = "food", allEntries = true)
     public FoodItemDTO updateFood(FoodUpdateCommand command) {
         // 获取旧的食物信息，以便检查图片是否变化
         Food oldFood = this.getById(command.getId());
@@ -320,23 +249,19 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
         food.setFoodName(command.getName());
         food.setMeasure(command.getMeasure());
         food.setCategoryId(command.getCategoryId());
-//        food.setImageUrl(command.getImageUrl());
+        food.setImageUrl(command.getImageUrl());
 
-        // 转换数值类型
-        food.setGrams(command.getGrams() != null ? String.valueOf(command.getGrams()) : null);
-        food.setCalories(command.getCalories() != null ? String.valueOf(command.getCalories()) : null);
-        food.setProtein(command.getProtein() != null ? String.valueOf(command.getProtein()) : null);
-        food.setFat(command.getFat() != null ? String.valueOf(command.getFat()) : null);
-        food.setCarbs(command.getCarbs() != null ? String.valueOf(command.getCarbs()) : null);
-        food.setSatFat(command.getSatFat() != null ? String.valueOf(command.getSatFat()) : null);
+        // 直接设置数值类型
+        food.setGrams(command.getGrams());
+        food.setCalories(command.getCalories());
+        food.setProtein(command.getProtein());
+        food.setFat(command.getFat());
+        food.setCarbs(command.getCarbs());
+        food.setSatFat(command.getSatFat());
 
         boolean result = this.updateById(food);
 
         if (result) {
-            // 清除缓存
-            cacheService.evict(CommonCacheConfig.FOOD_INFO_CACHE, food.getId());
-            cacheService.clear(CommonCacheConfig.FOOD_INFO_CACHE); // 清除所有食物相关缓存
-
             // 检查图片是否变化
             String newImagePath = food.getImageUrl();
             if (oldImagePath != null && !oldImagePath.isEmpty() &&
@@ -367,6 +292,7 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
      * 删除食物
      */
     @Override
+    @CacheEvict(value = "food", allEntries = true)
     public boolean deleteFood(Integer id) {
         // 先获取食物信息，以便删除图片
         Food food = this.getById(id);
@@ -381,10 +307,6 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
         boolean result = this.removeById(id);
 
         if (result) {
-            // 清除缓存
-            cacheService.evictAsync(CommonCacheConfig.FOOD_INFO_CACHE, id);
-            cacheService.clearAsync(CommonCacheConfig.FOOD_INFO_CACHE); // 清除所有食物相关缓存
-
             // 如果存在图片，则异步删除
             if (imagePath != null && !imagePath.isEmpty()) {
                 CompletableFuture.runAsync(() -> {
@@ -405,6 +327,7 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
      * 更新食物图片URL - 使用Command对象
      */
     @Override
+    @CacheEvict(value = "food", allEntries = true)
     public boolean updateFoodImageUrl(FoodImageUpdateCommand command) {
         Food food = this.getById(command.getFoodId());
         if (food == null) {
@@ -419,10 +342,6 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
         boolean result = this.updateById(food);
 
         if (result) {
-            // 清除缓存
-            cacheService.evictAsync(CommonCacheConfig.FOOD_INFO_CACHE, command.getFoodId());
-            cacheService.evictAsync(CommonCacheConfig.FOOD_INFO_CACHE, "list:*");
-
             // 如果存在旧图片，则异步删除
             if (oldImagePath != null && !oldImagePath.isEmpty() && !oldImagePath.equals(command.getImageUrl())) {
                 CompletableFuture.runAsync(() -> {
@@ -441,24 +360,10 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
 
 
 
-    /**
-     * 安全地将String转为Double，处理null值和格式异常
-     * @param value 要转换的字符串值
-     * @param defaultValue 转换失败时的默认值
-     * @return 转换后的Double值或默认值
-     */
-    private Double parseDoubleOrDefault(String value, Double defaultValue) {
-        if (value == null) {
-            return defaultValue;
-        }
-        try {
-            return Double.parseDouble(value);
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
-    }
+
 
     @Override
+    @CacheEvict(value = "food", allEntries = true)
     public Map<String, Object> batchImportFoods(List<FoodItemDTO> foods) {
         if (foods == null || foods.isEmpty()) {
             throw new IllegalArgumentException("导入的食物数据不能为空");
@@ -497,10 +402,6 @@ public class FoodServiceImpl extends ServiceImpl<FoodMapper, Food> implements Fo
                 logger.error("导入食物数据异常", e);
             }
         }
-
-        // 清除所有食物相关缓存
-        cacheService.clearAsync(CommonCacheConfig.FOOD_INFO_CACHE);
-        // 注意：不再清除FOOD_CATEGORY_CACHE，这应该由FoodCategoryService负责
 
         // 返回结果
         result.put("successCount", successCount);

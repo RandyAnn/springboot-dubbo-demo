@@ -19,13 +19,13 @@ public class Food implements Serializable {
     private Integer id;
     private String foodName;
     private String measure;
-    private String grams;
-    private String calories;
-    private String protein;
-    private String fat;
-    private String satFat;
+    private Double grams;
+    private Double calories;
+    private Double protein;
+    private Double fat;
+    private Double satFat;
     private String fiber;
-    private String carbs;
+    private Double carbs;
     private String imageUrl; // 食物图片URL
     private Integer categoryId; // 分类ID
 }
