@@ -1,5 +1,7 @@
 package com.example.gateway.controller;
 
+import com.example.common.command.FoodCategorySaveCommand;
+import com.example.common.command.FoodCategoryUpdateCommand;
 import com.example.common.command.FoodImageUpdateCommand;
 import com.example.common.command.FoodQueryCommand;
 import com.example.common.command.FoodSaveCommand;
@@ -111,7 +113,11 @@ public class AdminFoodController {
     @PostMapping("/category")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<FoodCategoryDTO>> addCategory(@RequestBody FoodCategoryDTO categoryDTO) {
-        FoodCategoryDTO savedCategory = foodCategoryService.saveCategory(categoryDTO);
+        // 创建命令对象
+        FoodCategorySaveCommand command = new FoodCategorySaveCommand();
+        BeanUtils.copyProperties(categoryDTO, command);
+
+        FoodCategoryDTO savedCategory = foodCategoryService.saveCategory(command);
         return ResponseEntity.ok(ApiResponse.success(savedCategory));
     }
 
@@ -120,12 +126,16 @@ public class AdminFoodController {
      */
     @PutMapping("/category/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<FoodCategoryDTO>> updateCategory(
+    public ResponseEntity<ApiResponse<Boolean>> updateCategory(
             @PathVariable("id") Integer id,
             @RequestBody FoodCategoryDTO categoryDTO) {
-        categoryDTO.setId(id);
-        FoodCategoryDTO updatedCategory = foodCategoryService.updateCategory(categoryDTO);
-        return ResponseEntity.ok(ApiResponse.success(updatedCategory));
+        // 创建命令对象
+        FoodCategoryUpdateCommand command = new FoodCategoryUpdateCommand();
+        BeanUtils.copyProperties(categoryDTO, command);
+        command.setId(id);
+
+        boolean result = foodCategoryService.updateCategory(command);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**

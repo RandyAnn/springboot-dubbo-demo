@@ -1,5 +1,7 @@
 package com.example.common.service;
 
+import com.example.common.command.FoodCategorySaveCommand;
+import com.example.common.command.FoodCategoryUpdateCommand;
 import com.example.common.dto.FoodCategoryDTO;
 import com.example.common.response.PageResult;
 
@@ -14,7 +16,7 @@ public interface FoodCategoryService {
      * @return 分类列表
      */
     List<FoodCategoryDTO> getAllCategories();
-    
+
     /**
      * 分页查询食物分类
      * @param current 当前页
@@ -22,42 +24,28 @@ public interface FoodCategoryService {
      * @return 分页结果
      */
     PageResult<FoodCategoryDTO> getCategoriesByPage(Integer current, Integer size);
-    
+
     /**
      * 根据ID获取食物分类
      * @param id 分类ID
      * @return 分类详情
      */
     FoodCategoryDTO getCategoryById(Integer id);
-    
-    /**
-     * 根据名称获取食物分类
-     * @param name 分类名称
-     * @return 分类详情
-     */
-    FoodCategoryDTO getCategoryByName(String name);
-    
-    /**
-     * 根据名称获取分类ID
-     * @param name 分类名称
-     * @return 分类ID
-     */
-    Integer getCategoryIdByName(String name);
-    
+
     /**
      * 保存食物分类
-     * @param categoryDTO 分类信息
+     * @param command 分类保存命令对象
      * @return 保存后的分类信息
      */
-    FoodCategoryDTO saveCategory(FoodCategoryDTO categoryDTO);
-    
+    FoodCategoryDTO saveCategory(FoodCategorySaveCommand command);
+
     /**
      * 更新食物分类
-     * @param categoryDTO 分类信息
-     * @return 更新后的分类信息
+     * @param command 分类更新命令对象
+     * @return 是否更新成功
      */
-    FoodCategoryDTO updateCategory(FoodCategoryDTO categoryDTO);
-    
+    boolean updateCategory(FoodCategoryUpdateCommand command);
+
     /**
      * 删除食物分类
      * @param id 分类ID
