@@ -24,15 +24,9 @@ public class RedisCacheEventPublisher implements CacheEventPublisher {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
 
-    public RedisCacheEventPublisher(RedisTemplate<String, Object> redisTemplate) {
+    public RedisCacheEventPublisher(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
         this.redisTemplate = redisTemplate;
-        this.objectMapper = new ObjectMapper();
-        // 注册Java 8时间模块，以支持LocalDateTime序列化
-        this.objectMapper.registerModule(new JavaTimeModule());
-        // 配置Jackson以处理更多的序列化情况
-        this.objectMapper.findAndRegisterModules();
-        // 配置日期时间格式
-        this.objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        this.objectMapper = objectMapper;
     }
 
     @Override

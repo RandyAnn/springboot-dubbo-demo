@@ -4,7 +4,9 @@ import com.example.common.event.cache.CacheEventListener;
 import com.example.common.event.cache.CacheEventPublisher;
 import com.example.common.event.cache.RedisCacheEventMessageListener;
 import com.example.common.event.cache.RedisCacheEventPublisher;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -24,23 +26,27 @@ public class CacheEventConfig {
      * 创建Redis缓存事件发布器
      *
      * @param redisTemplate Redis模板
+     * @param redisObjectMapper Redis专用ObjectMapper
      * @return 缓存事件发布器
      */
     @Bean
-    public CacheEventPublisher cacheEventPublisher(RedisTemplate<String, Object> redisTemplate) {
-        return new RedisCacheEventPublisher(redisTemplate);
+    public CacheEventPublisher cacheEventPublisher(RedisTemplate<String, Object> redisTemplate,
+                                                   @Qualifier("redisObjectMapper") ObjectMapper redisObjectMapper) {
+        return new RedisCacheEventPublisher(redisTemplate, redisObjectMapper);
     }
 
     /**
      * 创建Redis缓存事件消息监听器
      *
      * @param listenersProvider 缓存事件监听器提供者
+     * @param redisObjectMapper Redis专用ObjectMapper
      * @return 缓存事件消息监听器
      */
     @Bean
     public RedisCacheEventMessageListener redisCacheEventMessageListener(
-            ObjectProvider<CacheEventListener> listenersProvider) {
-        RedisCacheEventMessageListener listener = new RedisCacheEventMessageListener(new StringRedisSerializer());
+            ObjectProvider<CacheEventListener> listenersProvider,
+            @Qualifier("redisObjectMapper") ObjectMapper redisObjectMapper) {
+        RedisCacheEventMessageListener listener = new RedisCacheEventMessageListener(new StringRedisSerializer(), redisObjectMapper);
 
         // 注册所有可用的监听器
         listenersProvider.forEach(listener::addListener);

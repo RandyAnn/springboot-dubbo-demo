@@ -23,13 +23,9 @@ public class RedisCacheEventMessageListener implements MessageListener {
     private final ObjectMapper objectMapper;
     private final RedisSerializer<String> stringSerializer;
 
-    public RedisCacheEventMessageListener(RedisSerializer<String> stringSerializer) {
+    public RedisCacheEventMessageListener(RedisSerializer<String> stringSerializer, ObjectMapper objectMapper) {
         this.stringSerializer = stringSerializer;
-        this.objectMapper = new ObjectMapper();
-        // 注册Java 8时间模块，以支持LocalDateTime反序列化
-        this.objectMapper.registerModule(new JavaTimeModule());
-        // 配置Jackson以处理更多的反序列化情况
-        this.objectMapper.findAndRegisterModules();
+        this.objectMapper = objectMapper;
     }
 
     /**

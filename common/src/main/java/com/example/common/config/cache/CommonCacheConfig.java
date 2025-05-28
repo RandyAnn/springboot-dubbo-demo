@@ -9,6 +9,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.annotation.Primary;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
@@ -75,9 +76,10 @@ public class CommonCacheConfig {
     }
 
     /**
-     * 配置支持Java 8日期时间类型的ObjectMapper
+     * 配置支持Java 8日期时间类型的ObjectMapper（用于HTTP响应，不包含类型信息）
      */
     @Bean
+    @Primary
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         // 注册Java 8时间模块，以支持LocalDate、LocalDateTime等序列化
@@ -86,6 +88,30 @@ public class CommonCacheConfig {
         objectMapper.findAndRegisterModules();
         // 配置日期时间格式，不使用时间戳
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
+        // HTTP响应不需要类型信息
+        return objectMapper;
+    }
+
+    /**
+     * 配置专门用于Redis缓存的ObjectMapper（包含类型信息）
+     */
+    @Bean
+    public ObjectMapper redisObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        // 注册Java 8时间模块，以支持LocalDate、LocalDateTime等序列化
+        objectMapper.registerModule(new JavaTimeModule());
+        // 配置Jackson以处理更多的序列化情况
+        objectMapper.findAndRegisterModules();
+        // 配置日期时间格式，不使用时间戳
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
+        // 启用默认类型信息，解决Redis缓存反序列化问题
+        objectMapper.activateDefaultTyping(
+            objectMapper.getPolymorphicTypeValidator(),
+            ObjectMapper.DefaultTyping.NON_FINAL
+        );
+
         return objectMapper;
     }
 
@@ -94,9 +120,10 @@ public class CommonCacheConfig {
      * 使用动态缓存创建，支持任意缓存名称
      */
     @Bean
-    public CacheManager redisCacheManager(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
-        // 使用配置好的ObjectMapper创建序列化器，支持Java 8日期时间类型
-        GenericJackson2JsonRedisSerializer jsonRedisSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+    public CacheManager redisCacheManager(RedisConnectionFactory connectionFactory,
+                                         @Qualifier("redisObjectMapper") ObjectMapper redisObjectMapper) {
+        // 使用配置好的Redis专用ObjectMapper创建序列化器，支持Java 8日期时间类型和类型信息
+        GenericJackson2JsonRedisSerializer jsonRedisSerializer = new GenericJackson2JsonRedisSerializer(redisObjectMapper);
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(30))  // 统一的过期时间
@@ -114,7 +141,8 @@ public class CommonCacheConfig {
      * 配置统一的RedisTemplate
      */
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory,
+                                                       @Qualifier("redisObjectMapper") ObjectMapper redisObjectMapper) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
@@ -123,8 +151,8 @@ public class CommonCacheConfig {
         template.setHashKeySerializer(new StringRedisSerializer());
 
         // 使用GenericJackson2JsonRedisSerializer来序列化和反序列化redis的value值
-        // 传入配置好的ObjectMapper，确保能够处理Java 8日期时间类型
-        GenericJackson2JsonRedisSerializer jsonRedisSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        // 传入配置好的Redis专用ObjectMapper，确保能够处理Java 8日期时间类型和类型信息
+        GenericJackson2JsonRedisSerializer jsonRedisSerializer = new GenericJackson2JsonRedisSerializer(redisObjectMapper);
         template.setValueSerializer(jsonRedisSerializer);
         template.setHashValueSerializer(jsonRedisSerializer);
 
@@ -189,8 +217,8 @@ public class CommonCacheConfig {
     @Bean
     public CacheService cacheService(RedisTemplate<String, Object> redisTemplate,
                                      @Qualifier("caffeineCacheManager") CacheManager cacheManager,
-                                     ObjectMapper objectMapper) {
-        return new CacheService(redisTemplate, cacheManager, objectMapper);
+                                     @Qualifier("redisObjectMapper") ObjectMapper redisObjectMapper) {
+        return new CacheService(redisTemplate, cacheManager, redisObjectMapper);
     }
 
 
