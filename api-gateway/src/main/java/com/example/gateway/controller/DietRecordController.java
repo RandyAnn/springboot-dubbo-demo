@@ -10,11 +10,10 @@ import com.example.common.dto.DietRecordResponseDTO;
 import com.example.common.response.ApiResponse;
 import com.example.common.response.PageResult;
 import com.example.common.service.DietRecordService;
+import com.example.common.util.SecurityContextUtil;
 import org.springframework.beans.BeanUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -36,9 +35,7 @@ public class DietRecordController {
     @PostMapping
     public ResponseEntity<ApiResponse<Map<String, Object>>> addDietRecord(@RequestBody DietRecordRequestDTO requestDTO) {
         // 从认证对象中获取userId
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
-        Long userId = (Long) details.get("userId");
+        Long userId = SecurityContextUtil.getCurrentUserId();
 
         // 创建Command对象
         DietRecordAddCommand command = DietRecordAddCommand.withUserId(userId);
@@ -69,9 +66,7 @@ public class DietRecordController {
     @GetMapping
     public ResponseEntity<ApiResponse<PageResult<DietRecordResponseDTO>>> getDietRecords(DietRecordQueryDTO queryDTO) {
         // 从认证对象中获取userId
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
-        Long userId = (Long) details.get("userId");
+        Long userId = SecurityContextUtil.getCurrentUserId();
 
         // 创建Command对象
         DietRecordQueryCommand command = DietRecordQueryCommand.withUserId(userId);
@@ -89,9 +84,7 @@ public class DietRecordController {
     @GetMapping("/{recordId}")
     public ResponseEntity<ApiResponse<DietRecordResponseDTO>> getDietRecordDetail(@PathVariable Long recordId) {
         // 从认证对象中获取userId
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
-        Long userId = (Long) details.get("userId");
+        Long userId = SecurityContextUtil.getCurrentUserId();
 
         DietRecordResponseDTO record = dietRecordService.getDietRecordDetail(userId, recordId);
 
@@ -108,9 +101,7 @@ public class DietRecordController {
     @DeleteMapping("/{recordId}")
     public ResponseEntity<ApiResponse<Void>> deleteDietRecord(@PathVariable Long recordId) {
         // 从认证对象中获取userId
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
-        Long userId = (Long) details.get("userId");
+        Long userId = SecurityContextUtil.getCurrentUserId();
 
         // 创建Command对象
         DietRecordDeleteCommand command = DietRecordDeleteCommand.of(userId, recordId);

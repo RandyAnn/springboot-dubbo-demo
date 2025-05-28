@@ -12,10 +12,9 @@ import com.example.common.dto.NutritionStatRequestDTO;
 import com.example.common.dto.NutritionTrendRequestDTO;
 import com.example.common.response.ApiResponse;
 import com.example.common.service.NutritionStatService;
+import com.example.common.util.SecurityContextUtil;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 营养分析控制器
@@ -43,9 +41,7 @@ public class NutritionController {
     @GetMapping("/daily")
     public ResponseEntity<ApiResponse<NutritionStatDTO>> getDailyNutrition(NutritionStatRequestDTO requestDTO) {
         // 从认证对象中获取userId
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
-        Long userId = (Long) details.get("userId");
+        Long userId = SecurityContextUtil.getCurrentUserId();
 
         // 创建命令对象
         NutritionStatCommand command = NutritionStatCommand.of(userId, requestDTO.getDateAsLocalDate());
@@ -64,9 +60,7 @@ public class NutritionController {
     @GetMapping("/trend")
     public ResponseEntity<ApiResponse<NutritionTrendDTO>> getNutritionTrend(NutritionTrendRequestDTO requestDTO) {
         // 从认证对象中获取userId
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
-        Long userId = (Long) details.get("userId");
+        Long userId = SecurityContextUtil.getCurrentUserId();
 
         // 获取日期参数
         LocalDate startDate = requestDTO.getStartDateAsLocalDate();
@@ -94,9 +88,7 @@ public class NutritionController {
     @GetMapping("/details")
     public ResponseEntity<ApiResponse<List<NutritionDetailItemDTO>>> getNutritionDetails(NutritionStatRequestDTO requestDTO) {
         // 从认证对象中获取userId
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
-        Long userId = (Long) details.get("userId");
+        Long userId = SecurityContextUtil.getCurrentUserId();
 
         // 创建命令对象
         NutritionStatCommand command = NutritionStatCommand.of(userId, requestDTO.getDateAsLocalDate());
@@ -115,9 +107,7 @@ public class NutritionController {
     @GetMapping("/advice")
     public ResponseEntity<ApiResponse<List<NutritionAdviceDTO>>> getNutritionAdvice(NutritionAdviceRequestDTO requestDTO) {
         // 从认证对象中获取userId
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
-        Long userId = (Long) details.get("userId");
+        Long userId = SecurityContextUtil.getCurrentUserId();
 
         // 创建命令对象
         NutritionAdviceCommand command = NutritionAdviceCommand.of(userId, requestDTO.getDateAsLocalDate());

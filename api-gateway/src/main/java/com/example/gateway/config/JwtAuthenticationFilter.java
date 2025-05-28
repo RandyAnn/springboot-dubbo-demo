@@ -46,18 +46,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String role = (String) claims.get("role");
                 // 从JWT中获取userId
                 Long userId = Long.valueOf(claims.get("userId").toString());
-                
+
                 // 确保角色有ROLE_前缀，但不要重复添加
                 String roleWithPrefix = role.startsWith("ROLE_") ? role : "ROLE_" + role;
-                
+
                 // 创建用户详情对象，保存额外信息
                 Map<String, Object> details = new HashMap<>();
-                details.put("userId", userId);
-                
-                // 创建认证令牌
+                details.put("username", username);
+                details.put("role", role);
+
+                // 创建认证令牌 - 使用userId作为principal
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        username, null, Collections.singletonList(new SimpleGrantedAuthority(roleWithPrefix)));
-                
+                        userId, null, Collections.singletonList(new SimpleGrantedAuthority(roleWithPrefix)));
+
                 // 设置认证详情
                 authentication.setDetails(details);
 

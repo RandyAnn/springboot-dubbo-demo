@@ -9,11 +9,10 @@ import com.example.common.response.ApiResponse;
 import com.example.common.service.FileService;
 import com.example.common.service.UserNutritionGoalService;
 import com.example.common.service.UserService;
+import com.example.common.util.SecurityContextUtil;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -39,9 +38,8 @@ public class UserController {
      */
     @GetMapping("/info")
     public ResponseEntity<ApiResponse<UserInfoDTO>> getUserInfo() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        UserInfoDTO user = userService.getUserByUsername(username);
+        Long userId = SecurityContextUtil.getCurrentUserId();
+        UserInfoDTO user = userService.getUserById(userId);
         return ResponseEntity.ok(ApiResponse.success(user));
     }
 
@@ -50,12 +48,11 @@ public class UserController {
      */
     @PutMapping("/update")
     public ResponseEntity<ApiResponse<UserInfoDTO>> updateUserInfo(@RequestBody UserUpdateRequestDTO requestDTO) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        UserInfoDTO currentUser = userService.getUserByUsername(username);
+        Long userId = SecurityContextUtil.getCurrentUserId();
+        UserInfoDTO currentUser = userService.getUserById(userId);
 
         // 创建命令对象
-        UserUpdateCommand command = UserUpdateCommand.withUserId(currentUser.getId());
+        UserUpdateCommand command = UserUpdateCommand.withUserId(userId);
 
         // 只复制允许修改的字段
         BeanUtils.copyProperties(requestDTO, command);
@@ -76,12 +73,10 @@ public class UserController {
      */
     @GetMapping("/nutrition-goal")
     public ResponseEntity<ApiResponse<UserNutritionGoal>> getNutritionGoal() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        UserInfoDTO user = userService.getUserByUsername(username);
+        Long userId = SecurityContextUtil.getCurrentUserId();
 
         // 使用新的方法，它会处理null情况并返回默认值
-        UserNutritionGoal nutritionGoal = userNutritionGoalService.getOrCreateNutritionGoalByUserId(user.getId());
+        UserNutritionGoal nutritionGoal = userNutritionGoalService.getOrCreateNutritionGoalByUserId(userId);
 
         return ResponseEntity.ok(ApiResponse.success(nutritionGoal));
     }
@@ -91,12 +86,10 @@ public class UserController {
      */
     @PutMapping("/nutrition-goal")
     public ResponseEntity<ApiResponse<UserNutritionGoal>> updateNutritionGoal(@RequestBody NutritionGoalRequestDTO requestDTO) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        UserInfoDTO user = userService.getUserByUsername(username);
+        Long userId = SecurityContextUtil.getCurrentUserId();
 
         // 创建命令对象
-        NutritionGoalCommand command = NutritionGoalCommand.withUserId(user.getId());
+        NutritionGoalCommand command = NutritionGoalCommand.withUserId(userId);
 
         // 复制请求数据到命令对象
         BeanUtils.copyProperties(requestDTO, command);
@@ -117,9 +110,7 @@ public class UserController {
             @RequestParam("contentType") String contentType) {
         try {
             // 从认证对象中获取userId
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
-            Long userId = (Long) details.get("userId");
+            Long userId = SecurityContextUtil.getCurrentUserId();
 
             // 生成上传URL（有效期15分钟）
             String presignedUrlWithFilename = fileService.generateUploadPresignedUrl(
@@ -150,10 +141,8 @@ public class UserController {
      */
     @GetMapping("/avatar")
     public ResponseEntity<ApiResponse<AvatarResponseDTO>> getUserAvatar() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // 从认证对象中获取userId
-        Map<String, Object> details = (Map<String, Object>) authentication.getDetails();
-        Long userId = (Long) details.get("userId");
+        Long userId = SecurityContextUtil.getCurrentUserId();
 
         // 获取用户信息
         UserInfoDTO user = userService.getUserById(userId);
