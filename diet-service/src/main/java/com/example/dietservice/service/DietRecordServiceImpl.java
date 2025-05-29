@@ -292,6 +292,47 @@ public class DietRecordServiceImpl extends ServiceImpl<DietRecordMapper, DietRec
     }
 
     @Override
+    public Map<Long, Map<String, List<DietRecordResponseDTO>>> getBatchDietRecordsForNutritionStat(
+            List<Long> userIds, LocalDate startDate, LocalDate endDate) {
+
+        log.debug("批量查询饮食记录用于营养统计: userIds={}, startDate={}, endDate={}",
+                userIds.size(), startDate, endDate);
+
+        if (userIds.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        // 构建查询条件：查询指定用户在指定日期范围内的所有饮食记录
+        LambdaQueryWrapper<DietRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(DietRecord::getUserId, userIds)
+               .between(DietRecord::getDate, startDate, endDate)
+               .orderByDesc(DietRecord::getDate)
+               .orderByDesc(DietRecord::getTime);
+
+        // 查询所有符合条件的饮食记录
+        List<DietRecord> dietRecords = dietRecordMapper.selectList(wrapper);
+
+        // 按用户ID和日期分组
+        Map<Long, Map<String, List<DietRecordResponseDTO>>> result = new HashMap<>();
+
+        for (DietRecord dietRecord : dietRecords) {
+            Long userId = dietRecord.getUserId();
+            String dateStr = dietRecord.getDate().toString();
+
+            // 转换为ResponseDTO
+            DietRecordResponseDTO responseDTO = convertToResponseDTO(dietRecord);
+
+            // 按用户ID分组
+            result.computeIfAbsent(userId, k -> new HashMap<>())
+                  .computeIfAbsent(dateStr, k -> new ArrayList<>())
+                  .add(responseDTO);
+        }
+
+        log.debug("批量查询完成，返回{}个用户的饮食记录", result.size());
+        return result;
+    }
+
+    @Override
     @Cacheable(value = "dietRecord", key = "'all_' + #command.page + '_' + #command.size + '_' + (#command.startDate ?: '') + '_' + (#command.endDate ?: '') + '_' + (#command.mealType ?: '')")
     public PageResult<DietRecordResponseDTO> getAllUsersDietRecords(DietRecordQueryCommand command) {
 

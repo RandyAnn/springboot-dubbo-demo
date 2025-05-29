@@ -1,29 +1,21 @@
 package com.example.nutrition.service;
 
+import com.example.common.command.DietRecordQueryCommand;
 import com.example.common.command.NutritionAdviceCommand;
 import com.example.common.command.NutritionStatCommand;
 import com.example.common.command.NutritionTrendCommand;
-import com.example.common.cache.CacheService;
-import com.example.common.config.cache.CommonCacheConfig;
-import com.example.common.dto.NutritionAdviceDTO;
-import com.example.common.dto.NutritionDetailItemDTO;
-import com.example.common.dto.NutritionStatDTO;
-import com.example.common.dto.NutritionTrendDTO;
-import com.example.common.dto.UserNutritionGoalResponseDTO;
-import com.example.common.entity.DietRecord;
-import com.example.common.entity.DietRecordFood;
+import com.example.common.dto.*;
 import com.example.common.entity.NutritionAdvice;
-import com.example.common.entity.UserNutritionGoal;
+import com.example.common.response.PageResult;
 import com.example.common.service.DietRecordService;
 import com.example.common.service.NutritionAdviceService;
 import com.example.common.service.NutritionStatService;
 import com.example.common.service.UserNutritionGoalService;
-import com.example.nutrition.mapper.NutritionStatMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -51,47 +43,26 @@ public class NutritionStatServiceImpl implements NutritionStatService {
     @Autowired
     private NutritionAdviceService nutritionAdviceService;
 
-    private final NutritionStatMapper nutritionStatMapper;
-    private final CacheService cacheService;
-
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static final long CACHE_EXPIRATION_HOURS = 24;
-    private static final long CACHE_EXPIRATION_MINUTES = CACHE_EXPIRATION_HOURS * 60;
-    private static final long CACHE_ADMIN_TREND_EXPIRATION_MINUTES = 30; // 管理员趋势数据缓存30分钟
-
-    @Autowired
-    public NutritionStatServiceImpl(NutritionStatMapper nutritionStatMapper,
-                                    CacheService cacheService) {
-        this.nutritionStatMapper = nutritionStatMapper;
-        this.cacheService = cacheService;
-    }
 
     @Override
+    @Cacheable(value = "nutritionStat", key = "'daily_' + #command.userId + '_' + #command.date")
     public NutritionStatDTO getDailyNutritionStat(NutritionStatCommand command) {
         Long userId = command.getUserId();
         LocalDate date = command.getDate();
-        // 构建缓存键
-        String cacheKey = "daily:" + userId + ":" + date;
-
-        // 尝试从缓存获取
-        NutritionStatDTO cachedStat = cacheService.get(CommonCacheConfig.NUTRITION_STATS_CACHE, cacheKey);
-        if (cachedStat != null) {
-            return cachedStat;
-        }
 
         // 查询用户营养目标
-        UserNutritionGoalResponseDTO nutritionGoalDTO = userNutritionGoalService.getNutritionGoal(userId);
-        UserNutritionGoal nutritionGoal;
-        if (nutritionGoalDTO == null) {
-            // 如果用户没有设置营养目标，使用默认值
-            nutritionGoal = createDefaultNutritionGoal(userId);
-        } else {
-            // 将DTO转换为实体对象
-            nutritionGoal = convertDTOToEntity(nutritionGoalDTO);
-        }
+        UserNutritionGoalResponseDTO nutritionGoal = userNutritionGoalService.getNutritionGoal(userId);
 
-        // 从数据库获取当日所有饮食记录
-        List<DietRecord> dietRecords = nutritionStatMapper.findDietRecordsByUserIdAndDate(userId, date);
+        // 构建查询命令获取当日饮食记录
+        DietRecordQueryCommand queryCommand = new DietRecordQueryCommand();
+        queryCommand.setUserId(userId);
+        queryCommand.setStartDate(date.format(DATE_FORMATTER));
+        queryCommand.setEndDate(date.format(DATE_FORMATTER));
+        queryCommand.setPage(1);
+        queryCommand.setSize(1000); // 设置足够大的页面大小获取当日所有记录
+
+        PageResult<DietRecordResponseDTO> dietRecordsResult = dietRecordService.getDietRecords(queryCommand);
 
         // 初始化营养统计数据
         NutritionStatDTO nutritionStat = new NutritionStatDTO();
@@ -102,13 +73,14 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         nutritionStat.setFat(0.0);
 
         // 汇总当日营养数据
-        for (DietRecord dietRecord : dietRecords) {
-            List<DietRecordFood> foods = nutritionStatMapper.findDietRecordFoodsByRecordId(dietRecord.getId());
-            for (DietRecordFood food : foods) {
-                nutritionStat.setCalorie(nutritionStat.getCalorie() + (food.getCalories() != null ? food.getCalories().intValue() : 0));
-                nutritionStat.setProtein(nutritionStat.getProtein() + (food.getProtein() != null ? food.getProtein().doubleValue() : 0));
-                nutritionStat.setCarbs(nutritionStat.getCarbs() + (food.getCarbs() != null ? food.getCarbs().doubleValue() : 0));
-                nutritionStat.setFat(nutritionStat.getFat() + (food.getFat() != null ? food.getFat().doubleValue() : 0));
+        for (DietRecordResponseDTO dietRecord : dietRecordsResult.getRecords()) {
+            if (dietRecord.getFoods() != null) {
+                for (DietRecordFoodDTO food : dietRecord.getFoods()) {
+                    nutritionStat.setCalorie(nutritionStat.getCalorie() + (food.getCalories() != null ? food.getCalories().intValue() : 0));
+                    nutritionStat.setProtein(nutritionStat.getProtein() + (food.getProtein() != null ? food.getProtein().doubleValue() : 0));
+                    nutritionStat.setCarbs(nutritionStat.getCarbs() + (food.getCarbs() != null ? food.getCarbs().doubleValue() : 0));
+                    nutritionStat.setFat(nutritionStat.getFat() + (food.getFat() != null ? food.getFat().doubleValue() : 0));
+                }
             }
         }
 
@@ -137,27 +109,17 @@ public class NutritionStatServiceImpl implements NutritionStatService {
             nutritionStat.setFatPercentage(0.0);
         }
 
-        // 异步缓存结果
-        cacheService.putAsync(CommonCacheConfig.NUTRITION_STATS_CACHE, cacheKey, nutritionStat, CACHE_EXPIRATION_MINUTES);
-
         return nutritionStat;
     }
 
 
 
     @Override
+    @Cacheable(value = "nutritionStat", key = "'trend_' + #command.userId + '_' + #command.startDate + '_' + #command.endDate")
     public NutritionTrendDTO getNutritionTrend(NutritionTrendCommand command) {
         Long userId = command.getUserId();
         LocalDate startDate = command.getStartDate();
         LocalDate endDate = command.getEndDate();
-        // 构建缓存键
-        String cacheKey = "trend:" + userId + ":" + startDate + "-" + endDate;
-
-        // 尝试从缓存获取
-        NutritionTrendDTO cachedTrend = cacheService.get(CommonCacheConfig.NUTRITION_STATS_CACHE, cacheKey);
-        if (cachedTrend != null) {
-            return cachedTrend;
-        }
 
         NutritionTrendDTO trendDTO = new NutritionTrendDTO();
         List<String> dateList = new ArrayList<>();
@@ -188,38 +150,22 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         trendDTO.setCarbsList(carbsList);
         trendDTO.setFatList(fatList);
 
-        // 异步缓存结果
-        cacheService.putAsync(CommonCacheConfig.NUTRITION_STATS_CACHE, cacheKey, trendDTO, CACHE_EXPIRATION_MINUTES);
-
         return trendDTO;
     }
 
 
 
     @Override
-    public List<NutritionDetailItemDTO> getNutritionDetails(NutritionStatCommand command) {
+    @Cacheable(value = "nutritionStat", key = "'details_' + #command.userId + '_' + #command.date")
+    public List<NutritionDetailItemDTO>getNutritionDetails(NutritionStatCommand command)  {
         Long userId = command.getUserId();
         LocalDate date = command.getDate();
-        // 构建缓存键
-        String cacheKey = "details:" + userId + ":" + date;
-
-        // 尝试从缓存获取
-        List<NutritionDetailItemDTO> cachedDetails = cacheService.get(CommonCacheConfig.NUTRITION_STATS_CACHE, cacheKey);
-        if (cachedDetails != null) {
-            return cachedDetails;
-        }
 
         // 获取当日营养摄入统计
         NutritionStatDTO nutritionStat = getDailyNutritionStat(NutritionStatCommand.of(userId, date));
 
         // 获取用户营养目标
-        UserNutritionGoalResponseDTO nutritionGoalDTO = userNutritionGoalService.getNutritionGoal(userId);
-        UserNutritionGoal nutritionGoal;
-        if (nutritionGoalDTO == null) {
-            nutritionGoal = createDefaultNutritionGoal(userId);
-        } else {
-            nutritionGoal = convertDTOToEntity(nutritionGoalDTO);
-        }
+        UserNutritionGoalResponseDTO nutritionGoal = userNutritionGoalService.getNutritionGoal(userId);
 
         List<NutritionDetailItemDTO> detailList = new ArrayList<>();
 
@@ -241,40 +187,21 @@ public class NutritionStatServiceImpl implements NutritionStatService {
                 : 0.0;
         detailList.add(new NutritionDetailItemDTO("脂肪", nutritionStat.getFat(), "g", fatPercentage));
 
-        // 异步缓存结果
-        cacheService.putAsync(CommonCacheConfig.NUTRITION_STATS_CACHE, cacheKey, detailList, CACHE_EXPIRATION_MINUTES);
-
         return detailList;
     }
 
 
 
     @Override
+    @Cacheable(value = "nutritionStat", key = "'advice_' + #command.userId + '_' + #command.date")
     public List<NutritionAdviceDTO> getNutritionAdvice(NutritionAdviceCommand command) {
         Long userId = command.getUserId();
         LocalDate date = command.getDate();
-        // 构建缓存键
-        String cacheKey = "advice:" + userId + ":" + date;
-
-        // 尝试从缓存获取
-        List<NutritionAdviceDTO> cachedAdvice = cacheService.get(CommonCacheConfig.NUTRITION_STATS_CACHE, cacheKey);
-        if (cachedAdvice != null) {
-            return cachedAdvice;
-        }
 
         List<NutritionAdviceDTO> adviceList = new ArrayList<>();
 
         // 获取当日营养摄入统计
         NutritionStatDTO nutritionStat = getDailyNutritionStat(NutritionStatCommand.of(userId, date));
-
-        // 获取用户营养目标
-        UserNutritionGoalResponseDTO nutritionGoalDTO = userNutritionGoalService.getNutritionGoal(userId);
-        UserNutritionGoal nutritionGoal;
-        if (nutritionGoalDTO == null) {
-            nutritionGoal = createDefaultNutritionGoal(userId);
-        } else {
-            nutritionGoal = convertDTOToEntity(nutritionGoalDTO);
-        }
 
         // 根据与目标的差距生成建议
 
@@ -317,67 +244,12 @@ public class NutritionStatServiceImpl implements NutritionStatService {
             }
         }
 
-        // 异步缓存结果
-        cacheService.putAsync(CommonCacheConfig.NUTRITION_STATS_CACHE, cacheKey, adviceList, CACHE_EXPIRATION_MINUTES);
-
         return adviceList;
     }
 
-
-
-    /**
-     * 创建默认的营养目标
-     * @param userId 用户ID
-     * @return 默认营养目标
-     */
-    private UserNutritionGoal createDefaultNutritionGoal(Long userId) {
-        UserNutritionGoal goal = new UserNutritionGoal();
-        goal.setUserId(userId);
-        goal.setCalorieTarget(2200);      // 默认每日2200卡路里
-        goal.setProteinTarget(65);        // 默认每日65克蛋白质
-        goal.setCarbsTarget(300);         // 默认每日300克碳水
-        goal.setFatTarget(70);            // 默认每日70克脂肪
-        goal.setIsVegetarian(false);
-        goal.setIsLowCarb(false);
-        goal.setIsHighProtein(false);
-        goal.setIsGlutenFree(false);
-        goal.setIsLowSodium(false);
-        return goal;
-    }
-
-    /**
-     * 将UserNutritionGoalResponseDTO转换为UserNutritionGoal实体
-     */
-    private UserNutritionGoal convertDTOToEntity(UserNutritionGoalResponseDTO dto) {
-        if (dto == null) {
-            return null;
-        }
-
-        UserNutritionGoal entity = new UserNutritionGoal();
-        BeanUtils.copyProperties(dto, entity);
-
-        // 转换LocalDateTime到Date
-        if (dto.getCreatedAt() != null) {
-            entity.setCreatedAt(java.sql.Timestamp.valueOf(dto.getCreatedAt()));
-        }
-        if (dto.getUpdatedAt() != null) {
-            entity.setUpdatedAt(java.sql.Timestamp.valueOf(dto.getUpdatedAt()));
-        }
-
-        return entity;
-    }
-
     @Override
+    @Cacheable(value = "nutritionStat", key = "'compliance_' + #date")
     public double calculateNutritionComplianceRate(LocalDate date) {
-        // 构建缓存键
-        String cacheKey = "compliance:" + date;
-
-        // 尝试从缓存获取
-        Double cachedRate = cacheService.get(CommonCacheConfig.NUTRITION_STATS_CACHE, cacheKey);
-        if (cachedRate != null) {
-            return cachedRate;
-        }
-
         // 获取所有活跃用户ID列表
         List<Long> activeUserIds = dietRecordService.findActiveUserIdsByDate(date);
 
@@ -385,39 +257,44 @@ public class NutritionStatServiceImpl implements NutritionStatService {
             return 0.0; // 如果没有活跃用户，返回0
         }
 
+        // 批量获取所有用户当日的饮食记录（一次RPC调用）
+        Map<Long, Map<String, List<DietRecordResponseDTO>>> batchDietRecords =
+            dietRecordService.getBatchDietRecordsForNutritionStat(activeUserIds, date, date);
+
         int compliantUsers = 0;
+        String dateStr = date.format(DATE_FORMATTER);
 
         // 遍历所有活跃用户，检查他们的营养达标情况
         for (Long userId : activeUserIds) {
-            // 获取用户当日营养数据，使用不缓存的方法
-            NutritionStatDTO nutritionStat = getDailyNutritionStatNoCache(userId, date);
+            try {
+                // 从批量查询结果中获取用户当日的饮食记录
+                Map<String, List<DietRecordResponseDTO>> userRecords = batchDietRecords.get(userId);
+                if (userRecords != null) {
+                    List<DietRecordResponseDTO> dayRecords = userRecords.get(dateStr);
+                    if (dayRecords != null && !dayRecords.isEmpty()) {
+                        // 计算当日营养摄入
+                        NutritionStatDTO nutritionStat = calculateNutritionFromRecords(userId, dayRecords, date);
 
-            // 获取用户营养目标
-            UserNutritionGoalResponseDTO nutritionGoalDTO = userNutritionGoalService.getNutritionGoal(userId);
-            UserNutritionGoal nutritionGoal;
-            if (nutritionGoalDTO == null) {
-                nutritionGoal = createDefaultNutritionGoal(userId);
-            } else {
-                nutritionGoal = convertDTOToEntity(nutritionGoalDTO);
-            }
+                        // 检查是否达标（这里简化为热量、蛋白质、碳水和脂肪都达到目标的80%以上）
+                        boolean isCompliant =
+                            nutritionStat.getCaloriePercentage() >= 80 &&
+                            nutritionStat.getProteinPercentage() >= 80 &&
+                            nutritionStat.getCarbsPercentage() >= 80 &&
+                            nutritionStat.getFatPercentage() >= 80;
 
-            // 检查是否达标（这里简化为热量、蛋白质、碳水和脂肪都达到目标的80%以上）
-            boolean isCompliant =
-                nutritionStat.getCaloriePercentage() >= 80 &&
-                nutritionStat.getProteinPercentage() >= 80 &&
-                nutritionStat.getCarbsPercentage() >= 80 &&
-                nutritionStat.getFatPercentage() >= 80;
-
-            if (isCompliant) {
-                compliantUsers++;
+                        if (isCompliant) {
+                            compliantUsers++;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // 忽略单个用户的错误，继续处理其他用户
+                log.error("计算用户营养达标率失败: userId={}, date={}", userId, date, e);
             }
         }
 
         // 计算达标率
         double complianceRate = (double) compliantUsers / activeUserIds.size() * 100;
-
-        // 异步缓存结果
-        cacheService.putAsync(CommonCacheConfig.NUTRITION_STATS_CACHE, cacheKey, complianceRate, CACHE_EXPIRATION_MINUTES);
 
         return complianceRate;
     }
@@ -425,72 +302,28 @@ public class NutritionStatServiceImpl implements NutritionStatService {
 
 
     @Override
-    public Map<String, Object> getAdminNutritionTrend(String period, LocalDate startDate, LocalDate endDate) {
+    @Cacheable(value = "nutritionStat", key = "'allTrend_' + #period")
+    public Map<String, Object> getAllNutritionTrend(String period) {
         // 处理日期参数
         LocalDate today = LocalDate.now();
+        LocalDate startDate;
+        LocalDate endDate = today;
 
-        // 根据period设置默认的日期范围
-        if (startDate == null) {
-            switch (period) {
-                case "week":
-                    startDate = today.minus(6, ChronoUnit.DAYS); // 最近一周
-                    break;
-                case "month":
-                    startDate = today.minus(29, ChronoUnit.DAYS); // 最近一个月
-                    break;
-                case "year":
-                    startDate = today.minus(364, ChronoUnit.DAYS); // 最近一年
-                    break;
-                default:
-                    startDate = today.minus(29, ChronoUnit.DAYS); // 默认一个月
-            }
+        // 根据period设置日期范围
+        switch (period) {
+            case "week":
+                startDate = today.minus(6, ChronoUnit.DAYS); // 最近一周
+                break;
+            case "month":
+                startDate = today.minus(29, ChronoUnit.DAYS); // 最近一个月
+                break;
+            case "year":
+                startDate = today.minus(364, ChronoUnit.DAYS); // 最近一年
+                break;
+            default:
+                startDate = today.minus(29, ChronoUnit.DAYS); // 默认一个月
         }
 
-        if (endDate == null) {
-            endDate = today;
-        }
-
-        // 限制日期范围，防止查询过大的数据量
-        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
-        if (daysBetween > 365) { // 最多查询一年的数据
-            startDate = endDate.minus(365, ChronoUnit.DAYS);
-        }
-
-        // 构建缓存键
-        String cacheKey = "admin:trend:" + period + ":"
-                + startDate.format(DATE_FORMATTER) + ":"
-                + endDate.format(DATE_FORMATTER);
-
-        // 尝试从缓存获取
-        Map<String, Object> cachedTrend = cacheService.get(CommonCacheConfig.NUTRITION_STATS_CACHE, cacheKey);
-        if (cachedTrend != null) {
-            return cachedTrend;
-        }
-
-        // 缓存未命中，计算趋势数据
-        Map<String, Object> trendData = calculateAverageNutritionTrend(startDate, endDate);
-
-        // 异步缓存结果
-        cacheService.putAsync(CommonCacheConfig.NUTRITION_STATS_CACHE, cacheKey, trendData, CACHE_ADMIN_TREND_EXPIRATION_MINUTES);
-
-        return trendData;
-    }
-
-
-
-    /**
-     * 计算所有用户的平均营养摄入趋势
-     *
-     * 注意：这里使用getDailyNutritionStatNoCache方法而不是getDailyNutritionStat方法
-     * 原因是避免为管理员仪表盘创建大量用户个人的Redis缓存
-     * 如果使用getDailyNutritionStat，会为每个用户每天创建一个Redis缓存
-     * 当用户数量很多且查询时间跨度大时，会在Redis中创建大量不必要的缓存
-     *
-     * @param startDate 开始日期
-     * @param endDate 结束日期
-     * @return 包含趋势数据的Map
-     */
-    private Map<String, Object> calculateAverageNutritionTrend(LocalDate startDate, LocalDate endDate) {
         // 获取所有活跃用户ID列表
         List<Long> activeUserIds = dietRecordService.findActiveUserIdsByDateRange(startDate, endDate);
 
@@ -498,12 +331,16 @@ public class NutritionStatServiceImpl implements NutritionStatService {
             // 如果没有活跃用户，返回空数据
             Map<String, Object> emptyResult = new HashMap<>();
             emptyResult.put("dateList", new ArrayList<String>());
-            emptyResult.put("calorieList", new ArrayList<Integer>());
+            emptyResult.put("calorieList", new ArrayList<Double>());
             emptyResult.put("proteinList", new ArrayList<Double>());
             emptyResult.put("carbsList", new ArrayList<Double>());
             emptyResult.put("fatList", new ArrayList<Double>());
             return emptyResult;
         }
+
+        // 批量获取所有用户在指定日期范围内的饮食记录（一次RPC调用）
+        Map<Long, Map<String, List<DietRecordResponseDTO>>> batchDietRecords =
+            dietRecordService.getBatchDietRecordsForNutritionStat(activeUserIds, startDate, endDate);
 
         // 准备结果数据结构
         List<String> dateList = new ArrayList<>();
@@ -517,6 +354,7 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         while (!currentDate.isAfter(endDate)) {
             // 添加日期
             dateList.add(currentDate.format(DATE_FORMATTER));
+            String dateStr = currentDate.format(DATE_FORMATTER);
 
             // 计算当日所有用户的平均营养摄入
             double totalCalorie = 0;
@@ -527,18 +365,25 @@ public class NutritionStatServiceImpl implements NutritionStatService {
 
             for (Long userId : activeUserIds) {
                 try {
-                    // 直接从数据库获取用户营养数据，而不是调用创建缓存的getDailyNutritionStat方法
-                    NutritionStatDTO nutritionStat = getDailyNutritionStatNoCache(userId, currentDate);
+                    // 从批量查询结果中获取用户当日的饮食记录
+                    Map<String, List<DietRecordResponseDTO>> userRecords = batchDietRecords.get(userId);
+                    if (userRecords != null) {
+                        List<DietRecordResponseDTO> dayRecords = userRecords.get(dateStr);
+                        if (dayRecords != null && !dayRecords.isEmpty()) {
+                            // 计算当日营养摄入
+                            NutritionStatDTO nutritionStat = calculateNutritionFromRecords(userId, dayRecords, currentDate);
 
-                    // 累加营养数据
-                    totalCalorie += nutritionStat.getCalorie();
-                    totalProtein += nutritionStat.getProtein();
-                    totalCarbs += nutritionStat.getCarbs();
-                    totalFat += nutritionStat.getFat();
-                    userCount++;
+                            // 累加营养数据
+                            totalCalorie += nutritionStat.getCalorie();
+                            totalProtein += nutritionStat.getProtein();
+                            totalCarbs += nutritionStat.getCarbs();
+                            totalFat += nutritionStat.getFat();
+                            userCount++;
+                        }
+                    }
                 } catch (Exception e) {
                     // 忽略单个用户的错误，继续处理其他用户
-                    log.error("获取用户营养数据失败: userId={}, date={}", userId, currentDate, e);
+                    log.error("计算用户营养数据失败: userId={}, date={}", userId, currentDate, e);
                 }
             }
 
@@ -571,27 +416,20 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         return result;
     }
 
+
+
     /**
-     * 获取用户每日营养数据（不缓存）
-     * 仅用于管理员查看整体趋势，避免为每个用户创建大量缓存
+     * 根据饮食记录列表计算营养统计数据
+     * 专门用于批量查询场景，避免重复的营养目标查询
      *
      * @param userId 用户ID
+     * @param dayRecords 当日饮食记录列表
      * @param date 日期
      * @return 营养统计数据
      */
-    private NutritionStatDTO getDailyNutritionStatNoCache(Long userId, LocalDate date) {
+    private NutritionStatDTO calculateNutritionFromRecords(Long userId, List<DietRecordResponseDTO> dayRecords, LocalDate date) {
         // 查询用户营养目标
-        UserNutritionGoalResponseDTO nutritionGoalDTO = userNutritionGoalService.getNutritionGoal(userId);
-        UserNutritionGoal nutritionGoal;
-        if (nutritionGoalDTO == null) {
-            // 如果用户没有设置营养目标，使用默认值
-            nutritionGoal = createDefaultNutritionGoal(userId);
-        } else {
-            nutritionGoal = convertDTOToEntity(nutritionGoalDTO);
-        }
-
-        // 从数据库获取当日所有饮食记录
-        List<DietRecord> dietRecords = nutritionStatMapper.findDietRecordsByUserIdAndDate(userId, date);
+        UserNutritionGoalResponseDTO nutritionGoal = userNutritionGoalService.getNutritionGoal(userId);
 
         // 初始化营养统计数据
         NutritionStatDTO nutritionStat = new NutritionStatDTO();
@@ -602,13 +440,14 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         nutritionStat.setFat(0.0);
 
         // 汇总当日营养数据
-        for (DietRecord dietRecord : dietRecords) {
-            List<DietRecordFood> foods = nutritionStatMapper.findDietRecordFoodsByRecordId(dietRecord.getId());
-            for (DietRecordFood food : foods) {
-                nutritionStat.setCalorie(nutritionStat.getCalorie() + (food.getCalories() != null ? food.getCalories().intValue() : 0));
-                nutritionStat.setProtein(nutritionStat.getProtein() + (food.getProtein() != null ? food.getProtein().doubleValue() : 0));
-                nutritionStat.setCarbs(nutritionStat.getCarbs() + (food.getCarbs() != null ? food.getCarbs().doubleValue() : 0));
-                nutritionStat.setFat(nutritionStat.getFat() + (food.getFat() != null ? food.getFat().doubleValue() : 0));
+        for (DietRecordResponseDTO dietRecord : dayRecords) {
+            if (dietRecord.getFoods() != null) {
+                for (DietRecordFoodDTO food : dietRecord.getFoods()) {
+                    nutritionStat.setCalorie(nutritionStat.getCalorie() + (food.getCalories() != null ? food.getCalories().intValue() : 0));
+                    nutritionStat.setProtein(nutritionStat.getProtein() + (food.getProtein() != null ? food.getProtein().doubleValue() : 0));
+                    nutritionStat.setCarbs(nutritionStat.getCarbs() + (food.getCarbs() != null ? food.getCarbs().doubleValue() : 0));
+                    nutritionStat.setFat(nutritionStat.getFat() + (food.getFat() != null ? food.getFat().doubleValue() : 0));
+                }
             }
         }
 

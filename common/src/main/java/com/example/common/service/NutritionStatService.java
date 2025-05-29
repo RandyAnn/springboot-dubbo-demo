@@ -58,9 +58,7 @@ public interface NutritionStatService {
      * 该方法返回所有用户的平均营养摄入趋势
      *
      * @param period 时间周期：week(周)、month(月)、year(年)
-     * @param startDate 开始日期，如果为null则根据period自动计算
-     * @param endDate 结束日期，如果为null则使用当前日期
      * @return 包含趋势数据的Map，包括dateList、calorieList、proteinList、carbsList、fatList
      */
-    Map<String, Object> getAdminNutritionTrend(String period, LocalDate startDate, LocalDate endDate);
+    Map<String, Object> getAllNutritionTrend(String period);
 }

@@ -74,6 +74,20 @@ public interface DietRecordService {
      */
     PageResult<DietRecordResponseDTO> getDietRecords(DietRecordQueryCommand command);
 
+
+
+    /**
+     * 批量获取多个用户在指定日期范围内的饮食记录
+     * 专门用于营养统计的聚合查询，避免多次RPC调用
+     *
+     * @param userIds 用户ID列表
+     * @param startDate 开始日期
+     * @param endDate 结束日期
+     * @return 按用户ID和日期分组的饮食记录Map，格式：Map<userId, Map<date, List<DietRecordResponseDTO>>>
+     */
+    Map<Long, Map<String, List<DietRecordResponseDTO>>> getBatchDietRecordsForNutritionStat(
+            List<Long> userIds, LocalDate startDate, LocalDate endDate);
+
     /**
      * 获取所有用户的饮食记录列表（管理员使用）- 使用Command对象
      * @param command 饮食记录查询命令对象

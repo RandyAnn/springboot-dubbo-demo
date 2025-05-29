@@ -35,17 +35,13 @@ public class AdminNutritionController {
     /**
      * 获取营养摄入趋势数据
      * @param period 时间周期：week(周)、month(月)、year(年)
-     * @param startDate 开始日期，如果为null则根据period自动计算
-     * @param endDate 结束日期，如果为null则使用当前日期
      * @return 趋势数据
      */
     @GetMapping("/trend")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getNutritionTrend(
-            @RequestParam(defaultValue = "month") String period,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
+            @RequestParam(defaultValue = "month") String period) {
 
-        Map<String, Object> trendData = nutritionStatService.getAdminNutritionTrend(period, startDate, endDate);
+        Map<String, Object> trendData = nutritionStatService.getAllNutritionTrend(period);
 
         return ResponseEntity.ok(ApiResponse.success(trendData));
     }

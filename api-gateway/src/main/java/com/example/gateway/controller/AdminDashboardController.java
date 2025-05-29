@@ -3,7 +3,6 @@ package com.example.gateway.controller;
 import com.example.common.command.DietRecordQueryCommand;
 import com.example.common.command.UserPageQueryCommand;
 import com.example.common.dto.*;
-import com.example.common.entity.User;
 import com.example.common.response.ApiResponse;
 import com.example.common.response.PageResult;
 import com.example.common.service.DietRecordService;
@@ -18,13 +17,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * 管理员仪表盘控制器
@@ -124,7 +120,7 @@ public class AdminDashboardController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
 
         try {
-            Map<String, Object> trendData = nutritionStatService.getAdminNutritionTrend(period, startDate, endDate);
+            Map<String, Object> trendData = nutritionStatService.getAllNutritionTrend(period);
             return ResponseEntity.ok(ApiResponse.success(trendData));
         } catch (Exception e) {
             e.printStackTrace();
