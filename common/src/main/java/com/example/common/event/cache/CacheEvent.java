@@ -1,5 +1,7 @@
 package com.example.common.event.cache;
 
+import lombok.Data;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -7,6 +9,8 @@ import java.time.LocalDateTime;
  * 缓存事件结构体
  * 定义缓存事件的标准数据结构
  */
+
+@Data
 public class CacheEvent implements Serializable {
     private static final long serialVersionUID = 1L;
     
@@ -106,57 +110,5 @@ public class CacheEvent implements Serializable {
         event.setCacheKey(cacheKey);
         event.setSourceService(sourceService);
         return event;
-    }
-
-    // Getters and Setters
-    public CacheEventType getEventType() {
-        return eventType;
-    }
-
-    public void setEventType(CacheEventType eventType) {
-        this.eventType = eventType;
-    }
-
-    public String getCacheName() {
-        return cacheName;
-    }
-
-    public void setCacheName(String cacheName) {
-        this.cacheName = cacheName;
-    }
-
-    public String getCacheKey() {
-        return cacheKey;
-    }
-
-    public void setCacheKey(String cacheKey) {
-        this.cacheKey = cacheKey;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public String getSourceService() {
-        return sourceService;
-    }
-
-    public void setSourceService(String sourceService) {
-        this.sourceService = sourceService;
-    }
-
-    @Override
-    public String toString() {
-        return "CacheEvent{" +
-                "eventType=" + eventType +
-                ", cacheName='" + cacheName + '\'' +
-                ", cacheKey='" + cacheKey + '\'' +
-                ", timestamp=" + timestamp +
-                ", sourceService='" + sourceService + '\'' +
-                '}';
     }
 }
