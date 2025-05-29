@@ -69,8 +69,8 @@ public class AdminNutritionController {
      * @return 营养建议列表
      */
     @GetMapping("/advice")
-    public ResponseEntity<ApiResponse<List<NutritionAdvice>>> getAllAdvices() {
-        List<NutritionAdvice> adviceList = nutritionAdviceService.getAllAdvices();
+    public ResponseEntity<ApiResponse<List<NutritionAdviceResponseDTO>>> getAllAdvices() {
+        List<NutritionAdviceResponseDTO> adviceList = nutritionAdviceService.getAllAdvices();
         return ResponseEntity.ok(ApiResponse.success(adviceList));
     }
 
@@ -80,8 +80,8 @@ public class AdminNutritionController {
      * @return 营养建议
      */
     @GetMapping("/advice/{id}")
-    public ResponseEntity<ApiResponse<NutritionAdvice>> getAdviceById(@PathVariable Long id) {
-        NutritionAdvice advice = nutritionAdviceService.getAdviceById(id);
+    public ResponseEntity<ApiResponse<NutritionAdviceResponseDTO>> getAdviceById(@PathVariable Long id) {
+        NutritionAdviceResponseDTO advice = nutritionAdviceService.getAdviceById(id);
         if (advice == null) {
             return ResponseEntity.ok(ApiResponse.error(404, "营养建议不存在"));
         }
@@ -127,13 +127,14 @@ public class AdminNutritionController {
             @RequestBody @Valid NutritionAdviceManageRequestDTO requestDTO) {
 
         // 检查营养建议是否存在
-        NutritionAdvice existingAdvice = nutritionAdviceService.getAdviceById(id);
+        NutritionAdviceResponseDTO existingAdvice = nutritionAdviceService.getAdviceById(id);
         if (existingAdvice == null) {
             return ResponseEntity.ok(ApiResponse.error(404, "营养建议不存在"));
         }
 
         // 创建命令对象
         NutritionAdviceManageCommand command = new NutritionAdviceManageCommand();
+        command.setId(id); // 设置ID到command中
         command.setType(requestDTO.getType());
         command.setTitle(requestDTO.getTitle());
         command.setDescription(requestDTO.getDescription());
@@ -145,7 +146,7 @@ public class AdminNutritionController {
         command.setStatus(requestDTO.getStatus());
 
         // 调用服务更新营养建议
-        NutritionAdviceResponseDTO updatedAdvice = nutritionAdviceService.updateAdvice(id, command);
+        NutritionAdviceResponseDTO updatedAdvice = nutritionAdviceService.updateAdvice(command);
 
         return ResponseEntity.ok(ApiResponse.success(updatedAdvice));
     }
@@ -170,10 +171,10 @@ public class AdminNutritionController {
      * @return 营养建议列表
      */
     @GetMapping("/advice/condition/{conditionType}")
-    public ResponseEntity<ApiResponse<List<NutritionAdvice>>> getAdvicesByConditionType(
+    public ResponseEntity<ApiResponse<List<NutritionAdviceResponseDTO>>> getAdvicesByConditionType(
             @PathVariable String conditionType) {
 
-        List<NutritionAdvice> adviceList = nutritionAdviceService.getAdvicesByConditionType(conditionType);
+        List<NutritionAdviceResponseDTO> adviceList = nutritionAdviceService.getAdvicesByConditionType(conditionType);
 
         return ResponseEntity.ok(ApiResponse.success(adviceList));
     }

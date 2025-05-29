@@ -25,13 +25,17 @@ public class NutritionAdviceServiceImpl implements NutritionAdviceService {
     private NutritionAdviceMapper nutritionAdviceMapper;
 
     @Override
-    public List<NutritionAdvice> getAllAdvices() {
-        return nutritionAdviceMapper.selectList(null);
+    public List<NutritionAdviceResponseDTO> getAllAdvices() {
+        List<NutritionAdvice> advices = nutritionAdviceMapper.selectList(null);
+        return advices.stream()
+                .map(this::convertToResponseDTO)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Override
-    public NutritionAdvice getAdviceById(Long id) {
-        return nutritionAdviceMapper.selectById(id);
+    public NutritionAdviceResponseDTO getAdviceById(Long id) {
+        NutritionAdvice advice = nutritionAdviceMapper.selectById(id);
+        return convertToResponseDTO(advice);
     }
 
     @Override
@@ -52,8 +56,12 @@ public class NutritionAdviceServiceImpl implements NutritionAdviceService {
     }
 
     @Override
-    public NutritionAdviceResponseDTO updateAdvice(Long id, NutritionAdviceManageCommand command) {
-        NutritionAdvice advice = nutritionAdviceMapper.selectById(id);
+    public NutritionAdviceResponseDTO updateAdvice(NutritionAdviceManageCommand command) {
+        if (command.getId() == null) {
+            throw new IllegalArgumentException("更新营养建议时ID不能为空");
+        }
+
+        NutritionAdvice advice = nutritionAdviceMapper.selectById(command.getId());
         if (advice == null) {
             return null;
         }
@@ -80,19 +88,26 @@ public class NutritionAdviceServiceImpl implements NutritionAdviceService {
     }
 
     @Override
-    public NutritionAdvice getAdviceByCondition(String conditionType, Integer percentage) {
+    public NutritionAdviceResponseDTO getAdviceByCondition(String conditionType, Integer percentage) {
         List<NutritionAdvice> advices = nutritionAdviceMapper.findByConditionTypeAndPercentage(conditionType, percentage);
-        return advices.isEmpty() ? null : advices.get(0);
+        if (advices.isEmpty()) {
+            return null;
+        }
+        return convertToResponseDTO(advices.get(0));
     }
 
     @Override
-    public NutritionAdvice getDefaultAdvice() {
-        return nutritionAdviceMapper.findDefaultAdvice();
+    public NutritionAdviceResponseDTO getDefaultAdvice() {
+        NutritionAdvice advice = nutritionAdviceMapper.findDefaultAdvice();
+        return convertToResponseDTO(advice);
     }
 
     @Override
-    public List<NutritionAdvice> getAdvicesByConditionType(String conditionType) {
-        return nutritionAdviceMapper.findByConditionType(conditionType);
+    public List<NutritionAdviceResponseDTO> getAdvicesByConditionType(String conditionType) {
+        List<NutritionAdvice> advices = nutritionAdviceMapper.findByConditionType(conditionType);
+        return advices.stream()
+                .map(this::convertToResponseDTO)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Override

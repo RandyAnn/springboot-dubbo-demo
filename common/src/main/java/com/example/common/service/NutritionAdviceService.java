@@ -16,14 +16,14 @@ public interface NutritionAdviceService {
      * 获取所有营养建议
      * @return 营养建议列表
      */
-    List<NutritionAdvice> getAllAdvices();
+    List<NutritionAdviceResponseDTO> getAllAdvices();
 
     /**
      * 根据ID获取营养建议
      * @param id 营养建议ID
      * @return 营养建议
      */
-    NutritionAdvice getAdviceById(Long id);
+    NutritionAdviceResponseDTO getAdviceById(Long id);
 
     /**
      * 创建营养建议
@@ -34,11 +34,10 @@ public interface NutritionAdviceService {
 
     /**
      * 更新营养建议
-     * @param id 营养建议ID
-     * @param command 营养建议命令对象
+     * @param command 营养建议命令对象（包含ID）
      * @return 更新后的营养建议响应DTO
      */
-    NutritionAdviceResponseDTO updateAdvice(Long id, NutritionAdviceManageCommand command);
+    NutritionAdviceResponseDTO updateAdvice(NutritionAdviceManageCommand command);
 
     /**
      * 删除营养建议
@@ -53,20 +52,20 @@ public interface NutritionAdviceService {
      * @param percentage 百分比值
      * @return 营养建议
      */
-    NutritionAdvice getAdviceByCondition(String conditionType, Integer percentage);
+    NutritionAdviceResponseDTO getAdviceByCondition(String conditionType, Integer percentage);
 
     /**
      * 获取默认营养建议
      * @return 默认营养建议
      */
-    NutritionAdvice getDefaultAdvice();
+    NutritionAdviceResponseDTO getDefaultAdvice();
 
     /**
      * 根据条件类型获取所有营养建议
      * @param conditionType 条件类型
      * @return 营养建议列表
      */
-    List<NutritionAdvice> getAdvicesByConditionType(String conditionType);
+    List<NutritionAdviceResponseDTO> getAdvicesByConditionType(String conditionType);
 
     /**
      * 将实体转换为DTO

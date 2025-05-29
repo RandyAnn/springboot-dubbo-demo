@@ -206,34 +206,34 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         // 根据与目标的差距生成建议
 
         // 检查蛋白质摄入
-        NutritionAdvice proteinAdvice = nutritionAdviceService.getAdviceByCondition("protein", nutritionStat.getProteinPercentage().intValue());
+        NutritionAdviceResponseDTO proteinAdvice = nutritionAdviceService.getAdviceByCondition("protein", nutritionStat.getProteinPercentage().intValue());
         if (proteinAdvice != null) {
-            adviceList.add(nutritionAdviceService.convertToDTO(proteinAdvice));
+            adviceList.add(convertResponseDTOToDTO(proteinAdvice));
         }
 
         // 检查碳水化合物摄入
-        NutritionAdvice carbsAdvice = nutritionAdviceService.getAdviceByCondition("carbs", nutritionStat.getCarbsPercentage().intValue());
+        NutritionAdviceResponseDTO carbsAdvice = nutritionAdviceService.getAdviceByCondition("carbs", nutritionStat.getCarbsPercentage().intValue());
         if (carbsAdvice != null) {
-            adviceList.add(nutritionAdviceService.convertToDTO(carbsAdvice));
+            adviceList.add(convertResponseDTOToDTO(carbsAdvice));
         }
 
         // 检查脂肪摄入
-        NutritionAdvice fatAdvice = nutritionAdviceService.getAdviceByCondition("fat", nutritionStat.getFatPercentage().intValue());
+        NutritionAdviceResponseDTO fatAdvice = nutritionAdviceService.getAdviceByCondition("fat", nutritionStat.getFatPercentage().intValue());
         if (fatAdvice != null) {
-            adviceList.add(nutritionAdviceService.convertToDTO(fatAdvice));
+            adviceList.add(convertResponseDTOToDTO(fatAdvice));
         }
 
         // 检查热量摄入
-        NutritionAdvice calorieAdvice = nutritionAdviceService.getAdviceByCondition("calorie", nutritionStat.getCaloriePercentage().intValue());
+        NutritionAdviceResponseDTO calorieAdvice = nutritionAdviceService.getAdviceByCondition("calorie", nutritionStat.getCaloriePercentage().intValue());
         if (calorieAdvice != null) {
-            adviceList.add(nutritionAdviceService.convertToDTO(calorieAdvice));
+            adviceList.add(convertResponseDTOToDTO(calorieAdvice));
         }
 
         // 如果没有任何建议，添加一个默认建议
         if (adviceList.isEmpty()) {
-            NutritionAdvice defaultAdvice = nutritionAdviceService.getDefaultAdvice();
+            NutritionAdviceResponseDTO defaultAdvice = nutritionAdviceService.getDefaultAdvice();
             if (defaultAdvice != null) {
-                adviceList.add(nutritionAdviceService.convertToDTO(defaultAdvice));
+                adviceList.add(convertResponseDTOToDTO(defaultAdvice));
             } else {
                 // 如果数据库中没有默认建议，使用硬编码的默认建议
                 adviceList.add(new NutritionAdviceDTO(
@@ -477,5 +477,21 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         }
 
         return nutritionStat;
+    }
+
+    /**
+     * 将NutritionAdviceResponseDTO转换为NutritionAdviceDTO
+     * @param responseDTO 营养建议响应DTO
+     * @return 营养建议DTO
+     */
+    private NutritionAdviceDTO convertResponseDTOToDTO(NutritionAdviceResponseDTO responseDTO) {
+        if (responseDTO == null) {
+            return null;
+        }
+        return new NutritionAdviceDTO(
+                responseDTO.getType(),
+                responseDTO.getTitle(),
+                responseDTO.getDescription()
+        );
     }
 }
