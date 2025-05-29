@@ -19,11 +19,10 @@ public interface DietRecordService {
 
     /**
      * 获取单条饮食记录详情
-     * @param userId 用户ID
      * @param recordId 记录ID
      * @return 饮食记录响应DTO
      */
-    DietRecordResponseDTO getDietRecordDetail(Long userId, Long recordId);
+    DietRecordResponseDTO getDietRecordDetail(Long recordId);
 
     /**
      * 统计指定日期的饮食记录数量
@@ -49,21 +48,9 @@ public interface DietRecordService {
 
 
 
-    /**
-     * 获取单条饮食记录详情（管理员使用）
-     * @param recordId 记录ID
-     * @return 饮食记录响应DTO
-     */
-    DietRecordResponseDTO getAdminDietRecordDetail(Long recordId);
 
-    /**
-     * 获取指定时间范围内的热门食物统计
-     * @param startDate 开始日期
-     * @param endDate 结束日期
-     * @param limit 返回数量限制
-     * @return 热门食物统计列表
-     */
-    List<Map<String, Object>> getPopularFoods(LocalDate startDate, LocalDate endDate, int limit);
+
+
 
     /**
      * 根据时间周期获取热门食物统计

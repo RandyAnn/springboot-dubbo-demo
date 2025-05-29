@@ -83,10 +83,7 @@ public class DietRecordController {
      */
     @GetMapping("/{recordId}")
     public ResponseEntity<ApiResponse<DietRecordResponseDTO>> getDietRecordDetail(@PathVariable Long recordId) {
-        // 从认证对象中获取userId
-        Long userId = SecurityContextUtil.getCurrentUserId();
-
-        DietRecordResponseDTO record = dietRecordService.getDietRecordDetail(userId, recordId);
+        DietRecordResponseDTO record = dietRecordService.getDietRecordDetail(recordId);
 
         if (record == null) {
             return ResponseEntity.ok(ApiResponse.error(404, "记录不存在"));

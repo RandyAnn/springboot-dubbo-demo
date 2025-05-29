@@ -198,7 +198,7 @@ public class AdminDashboardController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<DietRecordResponseDTO>> getDietRecordDetail(@PathVariable Long recordId) {
         try {
-            DietRecordResponseDTO record = dietRecordService.getAdminDietRecordDetail(recordId);
+            DietRecordResponseDTO record = dietRecordService.getDietRecordDetail(recordId);
 
             if (record == null) {
                 return ResponseEntity.ok(ApiResponse.error(404, "记录不存在"));

@@ -55,7 +55,7 @@ public class AdminDietRecordController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<DietRecordResponseDTO>> getDietRecordDetail(@PathVariable("id") Long id) {
-        DietRecordResponseDTO record = dietRecordService.getAdminDietRecordDetail(id);
+        DietRecordResponseDTO record = dietRecordService.getDietRecordDetail(id);
         if (record == null) {
             return ResponseEntity.ok(ApiResponse.error(404, "记录不存在"));
         }
