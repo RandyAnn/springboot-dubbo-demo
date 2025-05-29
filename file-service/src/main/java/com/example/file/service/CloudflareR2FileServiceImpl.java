@@ -1,12 +1,12 @@
 package com.example.file.service;
 
-import com.example.common.cache.CacheService;
-import com.example.common.config.cache.CommonCacheConfig;
 import com.example.common.exception.BusinessException;
 import com.example.common.service.FileService;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -31,9 +31,6 @@ public class CloudflareR2FileServiceImpl implements FileService {
 
     private static final Logger log = LoggerFactory.getLogger(CloudflareR2FileServiceImpl.class);
 
-    // 缓存过期时间（分钟）
-    private static final long CACHE_EXPIRATION_MINUTES = 30;
-
     @Autowired
     private S3Client s3Client;
 
@@ -42,9 +39,6 @@ public class CloudflareR2FileServiceImpl implements FileService {
 
     @Autowired
     private String bucketName;
-
-    @Autowired
-    private CacheService cacheService;
 
     @Value("${cloudflare.r2.allowed-types}")
     private String allowedTypes;
@@ -85,13 +79,8 @@ public class CloudflareR2FileServiceImpl implements FileService {
     }
 
     @Override
+    @Cacheable(value = "fileUrl", key = "#fileName")
     public String generateDownloadPresignedUrl(String fileName, int expiration) throws BusinessException {
-        // 尝试从缓存获取
-        String cachedUrl = cacheService.get(CommonCacheConfig.FILE_URL_CACHE, fileName);
-        if (cachedUrl != null) {
-            return cachedUrl;
-        }
-
         try {
             if (!StringUtils.hasText(fileName)) {
                 throw new BusinessException(400, "文件名不能为空");
@@ -125,9 +114,6 @@ public class CloudflareR2FileServiceImpl implements FileService {
             // 生成预签名URL
             String presignedUrl = s3Presigner.presignGetObject(presignRequest).url().toString();
 
-            // 缓存预签名URL，过期时间设置为比预签名URL短一些，确保缓存的URL仍然有效
-            cacheService.putAsync(CommonCacheConfig.FILE_URL_CACHE, fileName, presignedUrl, Math.min(expiration - 5, CACHE_EXPIRATION_MINUTES));
-
             return presignedUrl;
         } catch (S3Exception e) {
             if (e instanceof NoSuchKeyException) {
@@ -138,6 +124,7 @@ public class CloudflareR2FileServiceImpl implements FileService {
     }
 
     @Override
+    @CacheEvict(value = "fileUrl", key = "#fileName")
     public void deleteFile(String fileName) throws BusinessException {
         try {
             if (!StringUtils.hasText(fileName)) {
@@ -164,9 +151,6 @@ public class CloudflareR2FileServiceImpl implements FileService {
                     .build();
 
             s3Client.deleteObject(deleteObjectRequest);
-
-            // 清除缓存
-            cacheService.evictAsync(CommonCacheConfig.FILE_URL_CACHE, fileName);
         } catch (S3Exception e) {
             throw new BusinessException(500, "删除文件失败：" + e.getMessage());
         }
