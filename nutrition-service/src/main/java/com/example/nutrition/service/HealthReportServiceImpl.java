@@ -1,11 +1,7 @@
 package com.example.nutrition.service;
 
 import com.example.common.command.NutritionStatCommand;
-import com.example.common.cache.CacheService;
-import com.example.common.config.cache.CommonCacheConfig;
 import com.example.common.dto.*;
-import com.example.common.entity.UserNutritionGoal;
-import org.springframework.beans.BeanUtils;
 import com.example.common.service.HealthReportService;
 import com.example.common.service.NutritionStatService;
 import com.example.common.service.UserNutritionGoalService;
@@ -13,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -33,31 +30,12 @@ public class HealthReportServiceImpl implements HealthReportService {
     @Autowired
     private NutritionStatService nutritionStatService;
 
-    private final CacheService cacheService;
-
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static final long CACHE_EXPIRATION_HOURS = 24;
-    private static final long CACHE_EXPIRATION_MINUTES = CACHE_EXPIRATION_HOURS * 60;
-
-    @Autowired
-    public HealthReportServiceImpl(CacheService cacheService) {
-        this.cacheService = cacheService;
-    }
 
     @Override
+    @Cacheable(value = "healthReport", key = "'report_' + #userId + '_' + #date")
     public HealthReportDTO getHealthReport(Long userId, LocalDate date) {
-        // 构建缓存键
-        String cacheKey = "report:" + userId + ":" + date;
-
-        // 尝试从缓存获取
-        HealthReportDTO cachedReport = cacheService.get(CommonCacheConfig.HEALTH_REPORT_CACHE, cacheKey);
-        if (cachedReport != null) {
-            log.debug("从缓存获取健康报告: userId={}, date={}", userId, date);
-            return cachedReport;
-        }
-
-        UserNutritionGoalResponseDTO nutritionGoalDTO = userNutritionGoalService.getNutritionGoal(userId);
-        UserNutritionGoal nutritionGoal = convertDTOToEntity(nutritionGoalDTO);
+        UserNutritionGoalResponseDTO nutritionGoal = userNutritionGoalService.getNutritionGoal(userId);
 
         // 获取当前日期的营养统计数据
         NutritionStatDTO currentNutritionStat = nutritionStatService.getDailyNutritionStat(
@@ -89,9 +67,6 @@ public class HealthReportServiceImpl implements HealthReportService {
         WeeklyProgressDTO weeklyProgress = calculateWeeklyProgress(currentNutritionStat, lastWeekNutritionStat);
         healthReport.setWeeklyProgress(weeklyProgress);
 
-        // 异步缓存结果
-        cacheService.putAsync(CommonCacheConfig.HEALTH_REPORT_CACHE, cacheKey, healthReport, CACHE_EXPIRATION_MINUTES);
-
         return healthReport;
     }
 
@@ -101,7 +76,7 @@ public class HealthReportServiceImpl implements HealthReportService {
      * @param nutritionGoal 营养目标
      * @return 健康分数（0-100）
      */
-    private int calculateHealthScore(NutritionStatDTO nutritionStat, UserNutritionGoal nutritionGoal) {
+    private int calculateHealthScore(NutritionStatDTO nutritionStat, UserNutritionGoalResponseDTO nutritionGoal) {
         if (nutritionStat == null) {
             return 50; // 默认分数
         }
@@ -142,7 +117,7 @@ public class HealthReportServiceImpl implements HealthReportService {
      * @param nutritionGoal 营养目标
      * @return 营养平衡数据
      */
-    private NutritionBalanceDTO calculateNutritionBalance(NutritionStatDTO nutritionStat, UserNutritionGoal nutritionGoal) {
+    private NutritionBalanceDTO calculateNutritionBalance(NutritionStatDTO nutritionStat, UserNutritionGoalResponseDTO nutritionGoal) {
         if (nutritionStat == null) {
             return createDefaultNutritionBalance();
         }
@@ -218,25 +193,5 @@ public class HealthReportServiceImpl implements HealthReportService {
                 .build();
     }
 
-    /**
-     * 将UserNutritionGoalResponseDTO转换为UserNutritionGoal实体
-     */
-    private UserNutritionGoal convertDTOToEntity(UserNutritionGoalResponseDTO dto) {
-        if (dto == null) {
-            return null;
-        }
 
-        UserNutritionGoal entity = new UserNutritionGoal();
-        BeanUtils.copyProperties(dto, entity);
-
-        // 转换LocalDateTime到Date
-        if (dto.getCreatedAt() != null) {
-            entity.setCreatedAt(java.sql.Timestamp.valueOf(dto.getCreatedAt()));
-        }
-        if (dto.getUpdatedAt() != null) {
-            entity.setUpdatedAt(java.sql.Timestamp.valueOf(dto.getUpdatedAt()));
-        }
-
-        return entity;
-    }
 }
