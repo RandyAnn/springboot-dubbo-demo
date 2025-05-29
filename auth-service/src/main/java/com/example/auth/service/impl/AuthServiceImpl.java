@@ -56,17 +56,6 @@ public class AuthServiceImpl implements AuthService {
         this.objectMapper = objectMapper;
     }
 
-//    @Override
-//    public LoginResponse login(LoginRequest request) {
-//        // 根据登录类型调用相应的登录方法
-//        if (request.getLoginType() == LoginRequest.LoginType.ADMIN) {
-//            return adminLogin(request);
-//        } else if (request.getLoginType() == LoginRequest.LoginType.USER) {
-//            return userLogin(request);
-//        }
-//        throw new BusinessException(400, "无效的登录类型");
-//    }
-
     @Override
     public LoginResponseDTO adminLogin(LoginRequestDTO request) {
         if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
