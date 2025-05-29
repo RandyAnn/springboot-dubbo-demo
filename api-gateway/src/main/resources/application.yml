@@ -23,6 +23,7 @@ dubbo:
     version: 3.1.0    # 服务提供者使用的版本
   consumer:
     version: 3.1.0    # 服务消费者默认使用的版本
+    timeout: 3000
 
 # 添加日志配置
 logging:
