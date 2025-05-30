@@ -7,6 +7,7 @@ import com.example.common.entity.NutritionAdvice;
 import com.example.common.response.ApiResponse;
 import com.example.common.service.NutritionAdviceService;
 import com.example.common.service.NutritionStatService;
+import lombok.extern.slf4j.Slf4j;
 import javax.validation.Valid;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -21,6 +22,7 @@ import java.util.Map;
 /**
  * 后台管理-营养分析控制器
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/admin/nutrition")
 @PreAuthorize("hasRole('ADMIN')")
@@ -40,10 +42,13 @@ public class AdminNutritionController {
     @GetMapping("/trend")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getNutritionTrend(
             @RequestParam(defaultValue = "month") String period) {
-
-        Map<String, Object> trendData = nutritionStatService.getAllNutritionTrend(period);
-
-        return ResponseEntity.ok(ApiResponse.success(trendData));
+        try {
+            Map<String, Object> trendData = nutritionStatService.getAllNutritionTrend(period);
+            return ResponseEntity.ok(ApiResponse.success(trendData));
+        } catch (Exception e) {
+            log.error("获取营养摄入趋势数据失败，时间周期: {}", period, e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取营养摄入趋势数据失败"));
+        }
     }
 
     /**
@@ -54,14 +59,17 @@ public class AdminNutritionController {
     @GetMapping("/compliance-rate")
     public ResponseEntity<ApiResponse<Double>> getNutritionComplianceRate(
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+        try {
+            if (date == null) {
+                date = LocalDate.now();
+            }
 
-        if (date == null) {
-            date = LocalDate.now();
+            double complianceRate = nutritionStatService.calculateNutritionComplianceRate(date);
+            return ResponseEntity.ok(ApiResponse.success(complianceRate));
+        } catch (Exception e) {
+            log.error("获取营养达标率失败，日期: {}", date, e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取营养达标率失败"));
         }
-
-        double complianceRate = nutritionStatService.calculateNutritionComplianceRate(date);
-
-        return ResponseEntity.ok(ApiResponse.success(complianceRate));
     }
 
     /**
@@ -70,8 +78,13 @@ public class AdminNutritionController {
      */
     @GetMapping("/advice")
     public ResponseEntity<ApiResponse<List<NutritionAdviceResponseDTO>>> getAllAdvices() {
-        List<NutritionAdviceResponseDTO> adviceList = nutritionAdviceService.getAllAdvices();
-        return ResponseEntity.ok(ApiResponse.success(adviceList));
+        try {
+            List<NutritionAdviceResponseDTO> adviceList = nutritionAdviceService.getAllAdvices();
+            return ResponseEntity.ok(ApiResponse.success(adviceList));
+        } catch (Exception e) {
+            log.error("获取所有营养建议失败", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取所有营养建议失败"));
+        }
     }
 
     /**
@@ -81,11 +94,16 @@ public class AdminNutritionController {
      */
     @GetMapping("/advice/{id}")
     public ResponseEntity<ApiResponse<NutritionAdviceResponseDTO>> getAdviceById(@PathVariable Long id) {
-        NutritionAdviceResponseDTO advice = nutritionAdviceService.getAdviceById(id);
-        if (advice == null) {
-            return ResponseEntity.ok(ApiResponse.error(404, "营养建议不存在"));
+        try {
+            NutritionAdviceResponseDTO advice = nutritionAdviceService.getAdviceById(id);
+            if (advice == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(ApiResponse.success(advice));
+        } catch (Exception e) {
+            log.error("根据ID获取营养建议失败，ID: {}", id, e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取营养建议详情失败"));
         }
-        return ResponseEntity.ok(ApiResponse.success(advice));
     }
 
     /**
@@ -96,23 +114,27 @@ public class AdminNutritionController {
     @PostMapping("/advice")
     public ResponseEntity<ApiResponse<NutritionAdviceResponseDTO>> createAdvice(
             @RequestBody @Valid NutritionAdviceManageRequestDTO requestDTO) {
+        try {
+            // 创建命令对象
+            NutritionAdviceManageCommand command = new NutritionAdviceManageCommand();
+            command.setType(requestDTO.getType());
+            command.setTitle(requestDTO.getTitle());
+            command.setDescription(requestDTO.getDescription());
+            command.setConditionType(requestDTO.getConditionType());
+            command.setMinPercentage(requestDTO.getMinPercentage());
+            command.setMaxPercentage(requestDTO.getMaxPercentage());
+            command.setIsDefault(requestDTO.getIsDefault());
+            command.setPriority(requestDTO.getPriority());
+            command.setStatus(requestDTO.getStatus());
 
-        // 创建命令对象
-        NutritionAdviceManageCommand command = new NutritionAdviceManageCommand();
-        command.setType(requestDTO.getType());
-        command.setTitle(requestDTO.getTitle());
-        command.setDescription(requestDTO.getDescription());
-        command.setConditionType(requestDTO.getConditionType());
-        command.setMinPercentage(requestDTO.getMinPercentage());
-        command.setMaxPercentage(requestDTO.getMaxPercentage());
-        command.setIsDefault(requestDTO.getIsDefault());
-        command.setPriority(requestDTO.getPriority());
-        command.setStatus(requestDTO.getStatus());
+            // 调用服务创建营养建议
+            NutritionAdviceResponseDTO createdAdvice = nutritionAdviceService.createAdvice(command);
 
-        // 调用服务创建营养建议
-        NutritionAdviceResponseDTO createdAdvice = nutritionAdviceService.createAdvice(command);
-
-        return ResponseEntity.ok(ApiResponse.success(createdAdvice));
+            return ResponseEntity.ok(ApiResponse.success(createdAdvice));
+        } catch (Exception e) {
+            log.error("创建营养建议失败", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "创建营养建议失败"));
+        }
     }
 
     /**
@@ -125,30 +147,34 @@ public class AdminNutritionController {
     public ResponseEntity<ApiResponse<NutritionAdviceResponseDTO>> updateAdvice(
             @PathVariable Long id,
             @RequestBody @Valid NutritionAdviceManageRequestDTO requestDTO) {
+        try {
+            // 检查营养建议是否存在
+            NutritionAdviceResponseDTO existingAdvice = nutritionAdviceService.getAdviceById(id);
+            if (existingAdvice == null) {
+                return ResponseEntity.notFound().build();
+            }
 
-        // 检查营养建议是否存在
-        NutritionAdviceResponseDTO existingAdvice = nutritionAdviceService.getAdviceById(id);
-        if (existingAdvice == null) {
-            return ResponseEntity.ok(ApiResponse.error(404, "营养建议不存在"));
+            // 创建命令对象
+            NutritionAdviceManageCommand command = new NutritionAdviceManageCommand();
+            command.setId(id); // 设置ID到command中
+            command.setType(requestDTO.getType());
+            command.setTitle(requestDTO.getTitle());
+            command.setDescription(requestDTO.getDescription());
+            command.setConditionType(requestDTO.getConditionType());
+            command.setMinPercentage(requestDTO.getMinPercentage());
+            command.setMaxPercentage(requestDTO.getMaxPercentage());
+            command.setIsDefault(requestDTO.getIsDefault());
+            command.setPriority(requestDTO.getPriority());
+            command.setStatus(requestDTO.getStatus());
+
+            // 调用服务更新营养建议
+            NutritionAdviceResponseDTO updatedAdvice = nutritionAdviceService.updateAdvice(command);
+
+            return ResponseEntity.ok(ApiResponse.success(updatedAdvice));
+        } catch (Exception e) {
+            log.error("更新营养建议失败，ID: {}", id, e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "更新营养建议失败"));
         }
-
-        // 创建命令对象
-        NutritionAdviceManageCommand command = new NutritionAdviceManageCommand();
-        command.setId(id); // 设置ID到command中
-        command.setType(requestDTO.getType());
-        command.setTitle(requestDTO.getTitle());
-        command.setDescription(requestDTO.getDescription());
-        command.setConditionType(requestDTO.getConditionType());
-        command.setMinPercentage(requestDTO.getMinPercentage());
-        command.setMaxPercentage(requestDTO.getMaxPercentage());
-        command.setIsDefault(requestDTO.getIsDefault());
-        command.setPriority(requestDTO.getPriority());
-        command.setStatus(requestDTO.getStatus());
-
-        // 调用服务更新营养建议
-        NutritionAdviceResponseDTO updatedAdvice = nutritionAdviceService.updateAdvice(command);
-
-        return ResponseEntity.ok(ApiResponse.success(updatedAdvice));
     }
 
     /**
@@ -158,11 +184,16 @@ public class AdminNutritionController {
      */
     @DeleteMapping("/advice/{id}")
     public ResponseEntity<ApiResponse<Boolean>> deleteAdvice(@PathVariable Long id) {
-        boolean result = nutritionAdviceService.deleteAdvice(id);
-        if (!result) {
-            return ResponseEntity.ok(ApiResponse.error(404, "营养建议不存在"));
+        try {
+            boolean result = nutritionAdviceService.deleteAdvice(id);
+            if (!result) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(ApiResponse.success(true));
+        } catch (Exception e) {
+            log.error("删除营养建议失败，ID: {}", id, e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "删除营养建议失败"));
         }
-        return ResponseEntity.ok(ApiResponse.success(true));
     }
 
     /**
@@ -173,9 +204,12 @@ public class AdminNutritionController {
     @GetMapping("/advice/condition/{conditionType}")
     public ResponseEntity<ApiResponse<List<NutritionAdviceResponseDTO>>> getAdvicesByConditionType(
             @PathVariable String conditionType) {
-
-        List<NutritionAdviceResponseDTO> adviceList = nutritionAdviceService.getAdvicesByConditionType(conditionType);
-
-        return ResponseEntity.ok(ApiResponse.success(adviceList));
+        try {
+            List<NutritionAdviceResponseDTO> adviceList = nutritionAdviceService.getAdvicesByConditionType(conditionType);
+            return ResponseEntity.ok(ApiResponse.success(adviceList));
+        } catch (Exception e) {
+            log.error("根据条件类型获取营养建议失败，条件类型: {}", conditionType, e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "根据条件类型获取营养建议失败"));
+        }
     }
 }

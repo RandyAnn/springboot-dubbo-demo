@@ -7,7 +7,9 @@ import com.example.common.response.PageResult;
 import com.example.common.service.DietRecordService;
 import com.example.common.service.NutritionStatService;
 import com.example.common.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.springframework.beans.BeanUtils;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +24,7 @@ import java.util.Map;
  * 管理员仪表盘控制器
  * 提供管理员仪表盘相关的API接口
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/admin/dashboard")
 public class AdminDashboardController {
@@ -83,7 +86,7 @@ public class AdminDashboardController {
             Map<String, Object> trendData = nutritionStatService.getAllNutritionTrend(period);
             return ResponseEntity.ok(ApiResponse.success(trendData));
         } catch (Exception e) {
-            return ResponseEntity.ok(ApiResponse.error(500, e.getMessage()));
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取营养摄入趋势数据失败"));
         }
     }
 
@@ -91,46 +94,24 @@ public class AdminDashboardController {
      * 获取最新饮食记录列表
      * 用于管理员仪表盘展示所有用户的最新饮食记录
      *
-     * @param page 页码，默认为1
-     * @param size 每页记录数，默认为10
-     * @param mealType 餐次类型，可选参数：早餐、午餐、晚餐、加餐
-     * @param startDate 开始日期，格式：yyyy-MM-dd
-     * @param endDate 结束日期，格式：yyyy-MM-dd
-     * @param userId 用户ID，可选参数，用于筛选特定用户的记录
+     * @param queryDTO 查询参数DTO
      * @return 饮食记录列表
      */
     @GetMapping("/latest-diet-records")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<PageResult<DietRecordResponseDTO>>> getLatestDietRecords(
-            @RequestParam(required = false, defaultValue = "1") Integer page,
-            @RequestParam(required = false, defaultValue = "10") Integer size,
-            @RequestParam(required = false) String mealType,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
-            @RequestParam(required = false) Long userId) {
-
+    public ResponseEntity<ApiResponse<PageResult<DietRecordResponseDTO>>> getLatestDietRecords(DietRecordQueryDTO queryDTO) {
         try {
             // 构建查询命令对象
             DietRecordQueryCommand command = new DietRecordQueryCommand();
-            command.setPage(page);
-            command.setSize(size);
-            command.setMealType(mealType);
-            command.setUserId(userId);
-
-            if (startDate != null) {
-                command.setStartDate(startDate.toString());
-            }
-
-            if (endDate != null) {
-                command.setEndDate(endDate.toString());
-            }
+            BeanUtils.copyProperties(queryDTO, command);
 
             // 直接调用getAllUsersDietRecords，它会处理userId的逻辑
             PageResult<DietRecordResponseDTO> records = dietRecordService.getAllUsersDietRecords(command);
 
             return ResponseEntity.ok(ApiResponse.success(records));
         } catch (Exception e) {
-            return ResponseEntity.ok(ApiResponse.error(500, e.getMessage()));
+            log.error("获取最新饮食记录失败", e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取最新饮食记录失败"));
         }
     }
 
@@ -152,7 +133,8 @@ public class AdminDashboardController {
 
             return ResponseEntity.ok(ApiResponse.success(record));
         } catch (Exception e) {
-            return ResponseEntity.ok(ApiResponse.error(500, e.getMessage()));
+            log.error("获取饮食记录详情失败，记录ID: {}", recordId, e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取饮食记录详情失败"));
         }
     }
 
@@ -173,7 +155,8 @@ public class AdminDashboardController {
             List<Map<String, Object>> popularFoods = dietRecordService.getPopularFoodsByPeriod(period, 10);
             return ResponseEntity.ok(ApiResponse.success(popularFoods));
         } catch (Exception e) {
-            return ResponseEntity.ok(ApiResponse.error(500, e.getMessage()));
+            log.error("获取热门食物统计数据失败，时间周期: {}", period, e);
+            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取热门食物统计数据失败"));
         }
     }
 }
