@@ -11,10 +11,9 @@ import com.example.common.entity.User;
 import com.example.common.exception.BusinessException;
 import com.example.common.response.ApiResponse;
 import com.example.common.service.UserService;
-import com.example.common.util.JwtUtil;
-import io.jsonwebtoken.Claims;
+import com.example.common.util.SecurityContextUtil;
 import org.apache.dubbo.config.annotation.DubboReference;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,20 +27,10 @@ public class AuthController {
     @DubboReference
     private UserService userService;
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
-//    @PostMapping("/login")
-//    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
-//        LoginResponse response = remoteAuthService.login(request);
-//        return ResponseEntity.ok(ApiResponse.success(response));
-//    }
-
     @PostMapping("/admin/login")
     public ResponseEntity<ApiResponse<LoginResponseDTO>> adminLogin(@RequestBody LoginRequestDTO request) {
         request.setLoginType(LoginRequestDTO.LoginType.ADMIN);
         LoginResponseDTO response = remoteAuthService.adminLogin(request);
-        // AuthService现在已经返回包含UserInfoDTO的LoginResponseDTO
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -49,30 +38,20 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResponseDTO>> userLogin(@RequestBody LoginRequestDTO request) {
         request.setLoginType(LoginRequestDTO.LoginType.USER);
         LoginResponseDTO response = remoteAuthService.userLogin(request);
-        // AuthService现在已经返回包含UserInfoDTO的LoginResponseDTO
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @PostMapping("/wechat-login")
     public ResponseEntity<ApiResponse<LoginResponseDTO>> wechatLogin(@RequestBody WechatLoginRequestDTO request) {
         LoginResponseDTO response = remoteAuthService.wechatLogin(request);
-        // AuthService现在已经返回包含UserInfoDTO的LoginResponseDTO
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserInfoDTO>> register(@RequestBody User user) {
-        // 创建UserCreateCommand对象
+        // 创建UserCreateCommand对象并复制属性
         UserCreateCommand command = new UserCreateCommand();
-
-        // 复制User对象的属性到UserCreateCommand对象
-        command.setUsername(user.getUsername());
-        command.setPassword(user.getPassword());
-        command.setEmail(user.getEmail());
-        command.setRole(user.getRole());
-        command.setStatus(user.getStatus());
-        command.setAvatarUrl(user.getAvatarUrl());
-        command.setOpenid(user.getOpenid());
+        BeanUtils.copyProperties(user, command);
 
         // 调用服务创建用户
         UserInfoDTO createdUser = userService.createUser(command);
@@ -91,17 +70,12 @@ public class AuthController {
     }
 
     @GetMapping("/current")
-    public ResponseEntity<ApiResponse<UserInfoDTO>> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new BusinessException(401, "未授权");
-        }
-
-        // 从JWT中提取用户ID
-        String token = authHeader.substring(7);
-        Long userId = extractUserIdFromToken(token);
+    public ResponseEntity<ApiResponse<UserInfoDTO>> getCurrentUser() {
+        // 从Spring Security上下文中获取当前用户ID
+        Long userId = SecurityContextUtil.getCurrentUserId();
 
         if (userId == null) {
-            throw new BusinessException(401, "无效的token");
+            throw new BusinessException(401, "未授权");
         }
 
         // 获取用户信息
@@ -121,57 +95,28 @@ public class AuthController {
             @RequestHeader("Authorization") String authHeader,
             @RequestBody PasswordChangeDTO request) {
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        // 从Spring Security上下文中获取当前用户ID
+        Long userId = SecurityContextUtil.getCurrentUserId();
+
+        if (userId == null) {
             throw new BusinessException(401, "未授权");
         }
 
-        // 从JWT中提取用户ID
-        String token = authHeader.substring(7);
-        Long userId = extractUserIdFromToken(token);
-
-        if (userId == null) {
-            throw new BusinessException(401, "无效的token");
+        // 提取token用于在密码修改成功后使其失效
+        String token = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
         }
 
         // 设置用户ID和token
         request.setUserId(userId);
-        request.setToken(token); // 设置token，用于在密码修改成功后使其失效
+        request.setToken(token);
 
         // 调用修改密码服务
         boolean result = remoteAuthService.changePassword(request);
 
-        // 如果密码修改成功，返回204状态码，表示用户需要重新登录
-        if (result) {
-            return ResponseEntity.ok(ApiResponse.success(true));
-        } else {
-            return ResponseEntity.ok(ApiResponse.success(false));
-        }
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
-    // 从token中提取用户ID的方法
-    private Long extractUserIdFromToken(String token) {
-        try {
-            // 使用JwtUtil解析token
-            Claims claims = jwtUtil.parseToken(token);
-
-            // 从claims中获取userId
-            // 首先尝试获取userId字段
-            Object userIdObj = claims.get("userId");
-            if (userIdObj != null) {
-                if (userIdObj instanceof Integer) {
-                    return ((Integer) userIdObj).longValue();
-                } else if (userIdObj instanceof Long) {
-                    return (Long) userIdObj;
-                } else if (userIdObj instanceof String) {
-                    return Long.parseLong((String) userIdObj);
-                }
-            }
-
-            // 如果userId字段不存在，则返回null
-            return null;
-        } catch (Exception e) {
-            return null;
-        }
-    }
 }
 
