@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,6 +122,21 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         LocalDate startDate = command.getStartDate();
         LocalDate endDate = command.getEndDate();
 
+        log.debug("计算用户营养趋势: userId={}, startDate={}, endDate={}", userId, startDate, endDate);
+
+        // 一次性批量获取整个日期范围的饮食记录
+        Map<Long, Map<String, List<DietRecordResponseDTO>>> batchDietRecords =
+            dietRecordService.getBatchDietRecordsForNutritionStat(Arrays.asList(userId), startDate, endDate);
+
+        // 获取用户的饮食记录
+        Map<String, List<DietRecordResponseDTO>> userRecords = batchDietRecords.get(userId);
+        if (userRecords == null) {
+            userRecords = new HashMap<>();
+        }
+
+        // 只查询一次用户营养目标
+        UserNutritionGoalResponseDTO nutritionGoal = userNutritionGoalService.getNutritionGoal(userId);
+
         NutritionTrendDTO trendDTO = new NutritionTrendDTO();
         List<String> dateList = new ArrayList<>();
         List<Integer> calorieList = new ArrayList<>();
@@ -128,19 +144,30 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         List<Double> carbsList = new ArrayList<>();
         List<Double> fatList = new ArrayList<>();
 
+        // 遍历日期范围，计算每日营养数据
         LocalDate currentDate = startDate;
         while (!currentDate.isAfter(endDate)) {
-            // 获取每日营养数据
-            NutritionStatDTO dailyStat = getDailyNutritionStat(NutritionStatCommand.of(userId, currentDate));
+            String dateStr = currentDate.format(DATE_FORMATTER);
+            dateList.add(dateStr);
 
-            // 添加到趋势数据
-            dateList.add(currentDate.format(DATE_FORMATTER));
-            calorieList.add(dailyStat.getCalorie());
-            proteinList.add(dailyStat.getProtein());
-            carbsList.add(dailyStat.getCarbs());
-            fatList.add(dailyStat.getFat());
+            // 获取当日饮食记录
+            List<DietRecordResponseDTO> dayRecords = userRecords.get(dateStr);
 
-            // 移动到下一天
+            if (dayRecords != null && !dayRecords.isEmpty()) {
+                // 计算当日营养摄入
+                NutritionStatDTO dailyStat = calculateNutritionFromRecordsWithGoal(dayRecords, nutritionGoal, currentDate);
+                calorieList.add(dailyStat.getCalorie());
+                proteinList.add(dailyStat.getProtein());
+                carbsList.add(dailyStat.getCarbs());
+                fatList.add(dailyStat.getFat());
+            } else {
+                // 如果当天没有饮食记录，添加0值
+                calorieList.add(0);
+                proteinList.add(0.0);
+                carbsList.add(0.0);
+                fatList.add(0.0);
+            }
+
             currentDate = currentDate.plusDays(1);
         }
 
@@ -150,6 +177,7 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         trendDTO.setCarbsList(carbsList);
         trendDTO.setFatList(fatList);
 
+        log.debug("营养趋势计算完成: userId={}, 天数={}", userId, dateList.size());
         return trendDTO;
     }
 
@@ -161,31 +189,18 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         Long userId = command.getUserId();
         LocalDate date = command.getDate();
 
-        // 获取当日营养摄入统计
+        // 获取当日营养摄入统计（已包含百分比计算）
         NutritionStatDTO nutritionStat = getDailyNutritionStat(NutritionStatCommand.of(userId, date));
-
-        // 获取用户营养目标
-        UserNutritionGoalResponseDTO nutritionGoal = userNutritionGoalService.getNutritionGoal(userId);
 
         List<NutritionDetailItemDTO> detailList = new ArrayList<>();
 
-        // 添加蛋白质详情
-        double proteinPercentage = nutritionGoal.getProteinTarget() != null && nutritionGoal.getProteinTarget() > 0
-                ? Math.min(100, nutritionStat.getProtein() * 100.0 / nutritionGoal.getProteinTarget())
-                : 0.0;
-        detailList.add(new NutritionDetailItemDTO("蛋白质", nutritionStat.getProtein(), "g", proteinPercentage));
-
-        // 添加碳水化合物详情
-        double carbsPercentage = nutritionGoal.getCarbsTarget() != null && nutritionGoal.getCarbsTarget() > 0
-                ? Math.min(100, nutritionStat.getCarbs() * 100.0 / nutritionGoal.getCarbsTarget())
-                : 0.0;
-        detailList.add(new NutritionDetailItemDTO("碳水化合物", nutritionStat.getCarbs(), "g", carbsPercentage));
-
-        // 添加脂肪详情
-        double fatPercentage = nutritionGoal.getFatTarget() != null && nutritionGoal.getFatTarget() > 0
-                ? Math.min(100, nutritionStat.getFat() * 100.0 / nutritionGoal.getFatTarget())
-                : 0.0;
-        detailList.add(new NutritionDetailItemDTO("脂肪", nutritionStat.getFat(), "g", fatPercentage));
+        // 直接使用已计算的百分比，限制最大值为100%
+        detailList.add(new NutritionDetailItemDTO("蛋白质", nutritionStat.getProtein(), "g",
+            Math.min(100, nutritionStat.getProteinPercentage())));
+        detailList.add(new NutritionDetailItemDTO("碳水化合物", nutritionStat.getCarbs(), "g",
+            Math.min(100, nutritionStat.getCarbsPercentage())));
+        detailList.add(new NutritionDetailItemDTO("脂肪", nutritionStat.getFat(), "g",
+            Math.min(100, nutritionStat.getFatPercentage())));
 
         return detailList;
     }
@@ -261,6 +276,19 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         Map<Long, Map<String, List<DietRecordResponseDTO>>> batchDietRecords =
             dietRecordService.getBatchDietRecordsForNutritionStat(activeUserIds, date, date);
 
+        // 预先查询所有用户的营养目标并缓存（避免重复查询）
+        Map<Long, UserNutritionGoalResponseDTO> userNutritionGoals = new HashMap<>();
+        for (Long userId : activeUserIds) {
+            try {
+                UserNutritionGoalResponseDTO nutritionGoal = userNutritionGoalService.getNutritionGoal(userId);
+                if (nutritionGoal != null) {
+                    userNutritionGoals.put(userId, nutritionGoal);
+                }
+            } catch (Exception e) {
+                log.warn("获取用户营养目标失败: userId={}", userId, e);
+            }
+        }
+
         int compliantUsers = 0;
         String dateStr = date.format(DATE_FORMATTER);
 
@@ -272,18 +300,21 @@ public class NutritionStatServiceImpl implements NutritionStatService {
                 if (userRecords != null) {
                     List<DietRecordResponseDTO> dayRecords = userRecords.get(dateStr);
                     if (dayRecords != null && !dayRecords.isEmpty()) {
-                        // 计算当日营养摄入
-                        NutritionStatDTO nutritionStat = calculateNutritionFromRecords(userId, dayRecords, date);
+                        // 使用缓存的营养目标计算当日营养摄入
+                        UserNutritionGoalResponseDTO nutritionGoal = userNutritionGoals.get(userId);
+                        if (nutritionGoal != null) {
+                            NutritionStatDTO nutritionStat = calculateNutritionFromRecordsWithGoal(dayRecords, nutritionGoal, date);
 
-                        // 检查是否达标（这里简化为热量、蛋白质、碳水和脂肪都达到目标的80%以上）
-                        boolean isCompliant =
-                            nutritionStat.getCaloriePercentage() >= 80 &&
-                            nutritionStat.getProteinPercentage() >= 80 &&
-                            nutritionStat.getCarbsPercentage() >= 80 &&
-                            nutritionStat.getFatPercentage() >= 80;
+                            // 检查是否达标（这里简化为热量、蛋白质、碳水和脂肪都达到目标的80%以上）
+                            boolean isCompliant =
+                                nutritionStat.getCaloriePercentage() >= 80 &&
+                                nutritionStat.getProteinPercentage() >= 80 &&
+                                nutritionStat.getCarbsPercentage() >= 80 &&
+                                nutritionStat.getFatPercentage() >= 80;
 
-                        if (isCompliant) {
-                            compliantUsers++;
+                            if (isCompliant) {
+                                compliantUsers++;
+                            }
                         }
                     }
                 }
@@ -342,6 +373,19 @@ public class NutritionStatServiceImpl implements NutritionStatService {
         Map<Long, Map<String, List<DietRecordResponseDTO>>> batchDietRecords =
             dietRecordService.getBatchDietRecordsForNutritionStat(activeUserIds, startDate, endDate);
 
+        // 预先查询所有用户的营养目标并缓存（避免重复查询）
+        Map<Long, UserNutritionGoalResponseDTO> userNutritionGoals = new HashMap<>();
+        for (Long userId : activeUserIds) {
+            try {
+                UserNutritionGoalResponseDTO nutritionGoal = userNutritionGoalService.getNutritionGoal(userId);
+                if (nutritionGoal != null) {
+                    userNutritionGoals.put(userId, nutritionGoal);
+                }
+            } catch (Exception e) {
+                log.warn("获取用户营养目标失败: userId={}", userId, e);
+            }
+        }
+
         // 准备结果数据结构
         List<String> dateList = new ArrayList<>();
         List<Double> calorieList = new ArrayList<>();
@@ -370,15 +414,18 @@ public class NutritionStatServiceImpl implements NutritionStatService {
                     if (userRecords != null) {
                         List<DietRecordResponseDTO> dayRecords = userRecords.get(dateStr);
                         if (dayRecords != null && !dayRecords.isEmpty()) {
-                            // 计算当日营养摄入
-                            NutritionStatDTO nutritionStat = calculateNutritionFromRecords(userId, dayRecords, currentDate);
+                            // 使用缓存的营养目标计算当日营养摄入
+                            UserNutritionGoalResponseDTO nutritionGoal = userNutritionGoals.get(userId);
+                            if (nutritionGoal != null) {
+                                NutritionStatDTO nutritionStat = calculateNutritionFromRecordsWithGoal(dayRecords, nutritionGoal, currentDate);
 
-                            // 累加营养数据
-                            totalCalorie += nutritionStat.getCalorie();
-                            totalProtein += nutritionStat.getProtein();
-                            totalCarbs += nutritionStat.getCarbs();
-                            totalFat += nutritionStat.getFat();
-                            userCount++;
+                                // 累加营养数据
+                                totalCalorie += nutritionStat.getCalorie();
+                                totalProtein += nutritionStat.getProtein();
+                                totalCarbs += nutritionStat.getCarbs();
+                                totalFat += nutritionStat.getFat();
+                                userCount++;
+                            }
                         }
                     }
                 } catch (Exception e) {
@@ -418,19 +465,20 @@ public class NutritionStatServiceImpl implements NutritionStatService {
 
 
 
+
+
     /**
-     * 根据饮食记录列表计算营养统计数据
-     * 专门用于批量查询场景，避免重复的营养目标查询
+     * 根据饮食记录列表和营养目标计算营养统计数据
+     * 用于已经获取营养目标的场景，避免重复查询
      *
-     * @param userId 用户ID
      * @param dayRecords 当日饮食记录列表
+     * @param nutritionGoal 用户营养目标
      * @param date 日期
      * @return 营养统计数据
      */
-    private NutritionStatDTO calculateNutritionFromRecords(Long userId, List<DietRecordResponseDTO> dayRecords, LocalDate date) {
-        // 查询用户营养目标
-        UserNutritionGoalResponseDTO nutritionGoal = userNutritionGoalService.getNutritionGoal(userId);
-
+    private NutritionStatDTO calculateNutritionFromRecordsWithGoal(List<DietRecordResponseDTO> dayRecords,
+                                                                  UserNutritionGoalResponseDTO nutritionGoal,
+                                                                  LocalDate date) {
         // 初始化营养统计数据
         NutritionStatDTO nutritionStat = new NutritionStatDTO();
         nutritionStat.setDate(date.format(DATE_FORMATTER));
