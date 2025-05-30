@@ -444,4 +444,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(500, "生成下载URL失败");
         }
     }
+
+    /**
+     * 获取用户总数
+     */
+    @Override
+    public long getTotalUserCount() {
+        return this.count();
+    }
 }

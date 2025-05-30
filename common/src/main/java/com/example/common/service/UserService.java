@@ -60,6 +60,13 @@ public interface UserService extends IService<User> {
     PageResult<UserInfoDTO> getUserInfoPage(UserPageQueryCommand command);
 
     /**
+     * 获取用户总数
+     *
+     * @return 用户总数
+     */
+    long getTotalUserCount();
+
+    /**
      * 将User实体转换为UserInfoDTO
      */
     UserInfoDTO convertToDTO(User user);
