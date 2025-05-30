@@ -1,8 +1,8 @@
 package com.example.common.service;
 
-import com.example.common.command.NutritionAdviceManageCommand;
-import com.example.common.dto.NutritionAdviceDTO;
-import com.example.common.dto.NutritionAdviceResponseDTO;
+import com.example.common.command.nutrition.NutritionAdviceManageCommand;
+import com.example.common.dto.nutrition.NutritionAdviceDisplayDTO;
+import com.example.common.dto.nutrition.NutritionAdviceResponseDTO;
 import com.example.common.entity.NutritionAdvice;
 
 import java.util.List;
@@ -72,7 +72,7 @@ public interface NutritionAdviceService {
      * @param advice 营养建议实体
      * @return 营养建议DTO
      */
-    NutritionAdviceDTO convertToDTO(NutritionAdvice advice);
+    NutritionAdviceDisplayDTO convertToDTO(NutritionAdvice advice);
 
     /**
      * 将实体转换为响应DTO

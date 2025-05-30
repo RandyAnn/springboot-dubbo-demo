@@ -1,8 +1,8 @@
 package com.example.nutrition.service;
 
-import com.example.common.command.NutritionAdviceManageCommand;
-import com.example.common.dto.NutritionAdviceDTO;
-import com.example.common.dto.NutritionAdviceResponseDTO;
+import com.example.common.command.nutrition.NutritionAdviceManageCommand;
+import com.example.common.dto.nutrition.NutritionAdviceDisplayDTO;
+import com.example.common.dto.nutrition.NutritionAdviceResponseDTO;
 import com.example.common.entity.NutritionAdvice;
 import com.example.common.service.NutritionAdviceService;
 import com.example.nutrition.mapper.NutritionAdviceMapper;
@@ -111,12 +111,12 @@ public class NutritionAdviceServiceImpl implements NutritionAdviceService {
     }
 
     @Override
-    public NutritionAdviceDTO convertToDTO(NutritionAdvice advice) {
+    public NutritionAdviceDisplayDTO convertToDTO(NutritionAdvice advice) {
         if (advice == null) {
             return null;
         }
 
-        NutritionAdviceDTO dto = new NutritionAdviceDTO();
+        NutritionAdviceDisplayDTO dto = new NutritionAdviceDisplayDTO();
         dto.setType(advice.getType());
         dto.setTitle(advice.getTitle());
         dto.setDescription(advice.getDescription());

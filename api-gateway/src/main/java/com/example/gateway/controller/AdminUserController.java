@@ -1,10 +1,12 @@
 package com.example.gateway.controller;
 
-import com.example.common.command.UserCreateCommand;
-import com.example.common.command.UserPageQueryCommand;
-import com.example.common.command.UserUpdateCommand;
-import com.example.common.dto.*;
-import com.example.common.entity.User;
+import com.example.common.command.user.UserCreateCommand;
+import com.example.common.command.user.UserPageQueryCommand;
+import com.example.common.command.user.UserUpdateCommand;
+import com.example.common.dto.user.UserCreateRequestDTO;
+import com.example.common.dto.user.UserInfoDTO;
+import com.example.common.dto.user.UserQueryDTO;
+import com.example.common.dto.user.UserUpdateRequestDTO;
 import com.example.common.exception.BusinessException;
 import com.example.common.response.ApiResponse;
 import com.example.common.response.PageResult;
@@ -95,8 +97,8 @@ public class AdminUserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Boolean>> updateUserStatus(
             @PathVariable Long userId,
-            @RequestBody UserStatusUpdateDTO requestDTO) {
-        boolean result = userService.updateUserStatus(userId, requestDTO.getStatus());
+            @RequestParam Integer status) {
+        boolean result = userService.updateUserStatus(userId, status);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 

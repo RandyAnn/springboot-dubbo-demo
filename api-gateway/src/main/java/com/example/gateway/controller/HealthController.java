@@ -1,6 +1,6 @@
 package com.example.gateway.controller;
 
-import com.example.common.dto.HealthReportDTO;
+import com.example.common.dto.nutrition.HealthReportDTO;
 import com.example.common.response.ApiResponse;
 import com.example.common.service.HealthReportService;
 import com.example.common.util.SecurityContextUtil;

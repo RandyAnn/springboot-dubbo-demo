@@ -1,9 +1,8 @@
 package com.example.gateway.controller;
 
-import com.example.common.command.NutritionAdviceManageCommand;
-import com.example.common.dto.NutritionAdviceManageRequestDTO;
-import com.example.common.dto.NutritionAdviceResponseDTO;
-import com.example.common.entity.NutritionAdvice;
+import com.example.common.command.nutrition.NutritionAdviceManageCommand;
+import com.example.common.dto.nutrition.NutritionAdviceManageRequestDTO;
+import com.example.common.dto.nutrition.NutritionAdviceResponseDTO;
 import com.example.common.exception.BusinessException;
 import com.example.common.response.ApiResponse;
 import com.example.common.service.NutritionAdviceService;

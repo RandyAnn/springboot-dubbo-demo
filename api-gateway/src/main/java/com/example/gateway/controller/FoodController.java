@@ -1,17 +1,15 @@
 package com.example.gateway.controller;
 
-import com.example.common.command.FoodQueryCommand;
-import com.example.common.dto.FoodCategoryDTO;
-import com.example.common.dto.FoodItemDTO;
-import com.example.common.dto.FoodPageRequestDTO;
-import com.example.common.dto.FoodQueryDTO;
+import com.example.common.command.food.FoodQueryCommand;
+import com.example.common.dto.food.FoodCategoryDTO;
+import com.example.common.dto.food.FoodItemDTO;
+import com.example.common.dto.food.FoodQueryRequestDTO;
 import org.springframework.beans.BeanUtils;
 import com.example.common.response.ApiResponse;
 import com.example.common.response.PageResult;
 import com.example.common.service.FoodCategoryService;
 import com.example.common.service.FoodService;
 import org.apache.dubbo.config.annotation.DubboReference;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +32,7 @@ public class FoodController {
      * 分页查询食物列表
      */
     @GetMapping("/list")
-    public ResponseEntity<ApiResponse<PageResult<FoodItemDTO>>> getFoodsByPage(FoodPageRequestDTO requestDTO) {
+    public ResponseEntity<ApiResponse<PageResult<FoodItemDTO>>> getFoodsByPage(FoodQueryRequestDTO requestDTO) {
         // 转换为Command对象
         FoodQueryCommand command = new FoodQueryCommand();
         BeanUtils.copyProperties(requestDTO, command);

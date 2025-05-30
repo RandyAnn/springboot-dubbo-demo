@@ -1,11 +1,9 @@
 package com.example.common.service;
 
-import com.example.common.command.DietRecordAddCommand;
-import com.example.common.command.DietRecordDeleteCommand;
-import com.example.common.command.DietRecordQueryCommand;
-import com.example.common.dto.DietRecordDTO;
-import com.example.common.dto.DietRecordQueryDTO;
-import com.example.common.dto.DietRecordResponseDTO;
+import com.example.common.command.diet.DietRecordAddCommand;
+import com.example.common.command.diet.DietRecordDeleteCommand;
+import com.example.common.command.diet.DietRecordQueryCommand;
+import com.example.common.dto.diet.DietRecordResponseDTO;
 import com.example.common.response.PageResult;
 
 import java.time.LocalDate;

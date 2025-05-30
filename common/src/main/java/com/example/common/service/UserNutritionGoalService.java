@@ -1,8 +1,8 @@
 package com.example.common.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.example.common.command.NutritionGoalCommand;
-import com.example.common.dto.UserNutritionGoalResponseDTO;
+import com.example.common.command.user.NutritionGoalCommand;
+import com.example.common.dto.user.UserNutritionGoalResponseDTO;
 import com.example.common.entity.UserNutritionGoal;
 import com.example.common.exception.BusinessException;
 

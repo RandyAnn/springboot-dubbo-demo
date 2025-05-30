@@ -1,7 +1,8 @@
 package com.example.gateway.controller;
 
-import com.example.common.command.DietRecordQueryCommand;
-import com.example.common.dto.*;
+import com.example.common.command.diet.DietRecordQueryCommand;
+import com.example.common.dto.diet.DietRecordQueryDTO;
+import com.example.common.dto.diet.DietRecordResponseDTO;
 import com.example.common.exception.BusinessException;
 import com.example.common.response.ApiResponse;
 import com.example.common.response.PageResult;
@@ -11,7 +12,6 @@ import com.example.common.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;

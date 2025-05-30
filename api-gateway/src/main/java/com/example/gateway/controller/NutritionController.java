@@ -1,15 +1,15 @@
 package com.example.gateway.controller;
 
-import com.example.common.command.NutritionAdviceCommand;
-import com.example.common.command.NutritionStatCommand;
-import com.example.common.command.NutritionTrendCommand;
-import com.example.common.dto.NutritionAdviceDTO;
-import com.example.common.dto.NutritionDetailItemDTO;
-import com.example.common.dto.NutritionStatDTO;
-import com.example.common.dto.NutritionTrendDTO;
-import com.example.common.dto.NutritionAdviceRequestDTO;
-import com.example.common.dto.NutritionStatRequestDTO;
-import com.example.common.dto.NutritionTrendRequestDTO;
+import com.example.common.command.nutrition.NutritionAdviceCommand;
+import com.example.common.command.nutrition.NutritionStatCommand;
+import com.example.common.command.nutrition.NutritionTrendCommand;
+import com.example.common.dto.nutrition.NutritionAdviceDisplayDTO;
+import com.example.common.dto.nutrition.NutritionDetailItemDTO;
+import com.example.common.dto.nutrition.NutritionStatDTO;
+import com.example.common.dto.nutrition.NutritionTrendDTO;
+import com.example.common.dto.nutrition.NutritionAdviceRequestDTO;
+import com.example.common.dto.nutrition.NutritionStatRequestDTO;
+import com.example.common.dto.nutrition.NutritionTrendRequestDTO;
 import com.example.common.response.ApiResponse;
 import com.example.common.service.NutritionStatService;
 import com.example.common.util.SecurityContextUtil;
@@ -105,7 +105,7 @@ public class NutritionController {
      * @return 营养建议列表
      */
     @GetMapping("/advice")
-    public ResponseEntity<ApiResponse<List<NutritionAdviceDTO>>> getNutritionAdvice(NutritionAdviceRequestDTO requestDTO) {
+    public ResponseEntity<ApiResponse<List<NutritionAdviceDisplayDTO>>> getNutritionAdvice(NutritionAdviceRequestDTO requestDTO) {
         // 从认证对象中获取userId
         Long userId = SecurityContextUtil.getCurrentUserId();
 
@@ -113,7 +113,7 @@ public class NutritionController {
         NutritionAdviceCommand command = NutritionAdviceCommand.of(userId, requestDTO.getDateAsLocalDate());
 
         // 获取营养建议
-        List<NutritionAdviceDTO> adviceList = nutritionStatService.getNutritionAdvice(command);
+        List<NutritionAdviceDisplayDTO> adviceList = nutritionStatService.getNutritionAdvice(command);
 
         return ResponseEntity.ok(ApiResponse.success(adviceList));
     }

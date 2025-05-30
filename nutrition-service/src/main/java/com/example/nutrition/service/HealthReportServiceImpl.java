@@ -1,7 +1,8 @@
 package com.example.nutrition.service;
 
-import com.example.common.command.NutritionStatCommand;
-import com.example.common.dto.*;
+import com.example.common.command.nutrition.NutritionStatCommand;
+import com.example.common.dto.nutrition.*;
+import com.example.common.dto.user.UserNutritionGoalResponseDTO;
 import com.example.common.service.HealthReportService;
 import com.example.common.service.NutritionStatService;
 import com.example.common.service.UserNutritionGoalService;

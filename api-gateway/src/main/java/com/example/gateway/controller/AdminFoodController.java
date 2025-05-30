@@ -1,19 +1,17 @@
 package com.example.gateway.controller;
 
-import com.example.common.command.FoodCategorySaveCommand;
-import com.example.common.command.FoodCategoryUpdateCommand;
-import com.example.common.command.FoodImageUpdateCommand;
-import com.example.common.command.FoodQueryCommand;
-import com.example.common.command.FoodSaveCommand;
-import com.example.common.command.FoodUpdateCommand;
-import com.example.common.dto.FoodCategoryDTO;
-import com.example.common.dto.FoodImageUpdateRequestDTO;
-import com.example.common.dto.FoodItemDTO;
-import com.example.common.dto.FoodPageRequestDTO;
-import com.example.common.dto.FoodQueryDTO;
-import com.example.common.dto.FoodSaveRequestDTO;
-import com.example.common.dto.FoodUpdateRequestDTO;
-import com.example.common.exception.BusinessException;
+import com.example.common.command.food.FoodCategorySaveCommand;
+import com.example.common.command.food.FoodCategoryUpdateCommand;
+import com.example.common.command.food.FoodImageUpdateCommand;
+import com.example.common.command.food.FoodQueryCommand;
+import com.example.common.command.food.FoodSaveCommand;
+import com.example.common.command.food.FoodUpdateCommand;
+import com.example.common.dto.food.FoodCategoryDTO;
+import com.example.common.dto.food.FoodImageUpdateRequestDTO;
+import com.example.common.dto.food.FoodItemDTO;
+import com.example.common.dto.food.FoodQueryRequestDTO;
+import com.example.common.dto.food.FoodCreateRequestDTO;
+import com.example.common.dto.food.FoodUpdateRequestDTO;
 import com.example.common.response.ApiResponse;
 import com.example.common.response.PageResult;
 import com.example.common.service.FileService;
@@ -22,7 +20,6 @@ import com.example.common.service.FoodService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -54,7 +51,7 @@ public class AdminFoodController {
      */
     @GetMapping("/list")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<PageResult<FoodItemDTO>>> getFoodsByPage(FoodPageRequestDTO requestDTO) {
+    public ResponseEntity<ApiResponse<PageResult<FoodItemDTO>>> getFoodsByPage(FoodQueryRequestDTO requestDTO) {
         // 转换为Command对象
         FoodQueryCommand command = new FoodQueryCommand();
         BeanUtils.copyProperties(requestDTO, command);
@@ -154,7 +151,7 @@ public class AdminFoodController {
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<FoodItemDTO>> addFood(@RequestBody FoodSaveRequestDTO requestDTO) {
+    public ResponseEntity<ApiResponse<FoodItemDTO>> addFood(@RequestBody FoodCreateRequestDTO requestDTO) {
         // 创建命令对象
         FoodSaveCommand command = new FoodSaveCommand();
         BeanUtils.copyProperties(requestDTO, command);

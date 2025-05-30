@@ -1,12 +1,12 @@
 package com.example.gateway.controller;
 
 import com.example.auth.service.AuthService;
-import com.example.common.command.UserCreateCommand;
-import com.example.common.dto.LoginRequestDTO;
-import com.example.common.dto.LoginResponseDTO;
-import com.example.common.dto.PasswordChangeDTO;
-import com.example.common.dto.UserInfoDTO;
-import com.example.common.dto.WechatLoginRequestDTO;
+import com.example.common.command.user.UserCreateCommand;
+import com.example.common.dto.user.LoginRequestDTO;
+import com.example.common.dto.user.LoginResponseDTO;
+import com.example.common.dto.user.PasswordChangeRequestDTO;
+import com.example.common.dto.user.UserInfoDTO;
+import com.example.common.dto.user.WechatLoginRequestDTO;
 import com.example.common.entity.User;
 import com.example.common.exception.BusinessException;
 import com.example.common.response.ApiResponse;
@@ -93,7 +93,7 @@ public class AuthController {
     @PostMapping("/change-password")
     public ResponseEntity<ApiResponse<Boolean>> changePassword(
             @RequestHeader("Authorization") String authHeader,
-            @RequestBody PasswordChangeDTO request) {
+            @RequestBody PasswordChangeRequestDTO request) {
 
         // 从Spring Security上下文中获取当前用户ID
         Long userId = SecurityContextUtil.getCurrentUserId();

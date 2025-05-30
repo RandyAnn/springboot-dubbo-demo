@@ -1,14 +1,12 @@
 package com.example.auth.service.impl;
 
 import com.example.auth.service.AuthService;
-import com.example.common.command.UserCreateCommand;
-import com.example.common.command.UserUpdateCommand;
-import com.example.common.dto.LoginRequestDTO;
-import com.example.common.dto.LoginResponseDTO;
-import com.example.common.dto.PasswordChangeDTO;
-import com.example.common.dto.UserInfoDTO;
-import com.example.common.dto.WechatLoginRequestDTO;
-import com.example.common.entity.User;
+import com.example.common.command.user.UserCreateCommand;
+import com.example.common.dto.user.LoginRequestDTO;
+import com.example.common.dto.user.LoginResponseDTO;
+import com.example.common.dto.user.PasswordChangeRequestDTO;
+import com.example.common.dto.user.UserInfoDTO;
+import com.example.common.dto.user.WechatLoginRequestDTO;
 import com.example.common.exception.BusinessException;
 import com.example.common.service.UserService;
 import com.example.common.util.JwtUtil;
@@ -185,7 +183,7 @@ public class AuthServiceImpl implements AuthService {
      * 修改用户密码
      */
     @Override
-    public boolean changePassword(PasswordChangeDTO request) throws BusinessException {
+    public boolean changePassword(PasswordChangeRequestDTO request) throws BusinessException {
         if (request == null) {
             throw new BusinessException(400, "请求参数不能为空");
         }
@@ -219,8 +217,8 @@ public class AuthServiceImpl implements AuthService {
 
         // 如果密码修改成功，则使当前token失效
         // 注意：这里需要在controller层传入当前的token
-        if (result && request instanceof PasswordChangeDTO && ((PasswordChangeDTO) request).getToken() != null) {
-            logout(((PasswordChangeDTO) request).getToken());
+        if (result && request instanceof PasswordChangeRequestDTO && ((PasswordChangeRequestDTO) request).getToken() != null) {
+            logout(((PasswordChangeRequestDTO) request).getToken());
         }
 
         return result;

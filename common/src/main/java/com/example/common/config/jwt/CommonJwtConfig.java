@@ -22,24 +22,9 @@ public class CommonJwtConfig {
         return new JwtUtil(jwtProperties.getSecret(), jwtProperties.getExpiration(), redisTemplate);
     }
 
+    @lombok.Data
     public static class JwtProperties {
         private String secret;
         private long expiration = 86400000; // 默认值
-
-        public String getSecret() {
-            return secret;
-        }
-
-        public void setSecret(String secret) {
-            this.secret = secret;
-        }
-
-        public long getExpiration() {
-            return expiration;
-        }
-
-        public void setExpiration(long expiration) {
-            this.expiration = expiration;
-        }
     }
-} 
+}

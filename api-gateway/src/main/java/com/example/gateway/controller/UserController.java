@@ -1,9 +1,8 @@
 package com.example.gateway.controller;
 
-import com.example.common.command.NutritionGoalCommand;
-import com.example.common.command.UserUpdateCommand;
-import com.example.common.dto.*;
-import com.example.common.exception.BusinessException;
+import com.example.common.command.user.NutritionGoalCommand;
+import com.example.common.command.user.UserUpdateCommand;
+import com.example.common.dto.user.*;
 import com.example.common.response.ApiResponse;
 import com.example.common.service.UserNutritionGoalService;
 import com.example.common.service.UserService;

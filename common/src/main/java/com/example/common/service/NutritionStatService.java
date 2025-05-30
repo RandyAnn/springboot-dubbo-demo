@@ -1,12 +1,12 @@
 package com.example.common.service;
 
-import com.example.common.command.NutritionAdviceCommand;
-import com.example.common.command.NutritionStatCommand;
-import com.example.common.command.NutritionTrendCommand;
-import com.example.common.dto.NutritionAdviceDTO;
-import com.example.common.dto.NutritionDetailItemDTO;
-import com.example.common.dto.NutritionStatDTO;
-import com.example.common.dto.NutritionTrendDTO;
+import com.example.common.command.nutrition.NutritionAdviceCommand;
+import com.example.common.command.nutrition.NutritionStatCommand;
+import com.example.common.command.nutrition.NutritionTrendCommand;
+import com.example.common.dto.nutrition.NutritionAdviceDisplayDTO;
+import com.example.common.dto.nutrition.NutritionDetailItemDTO;
+import com.example.common.dto.nutrition.NutritionStatDTO;
+import com.example.common.dto.nutrition.NutritionTrendDTO;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -43,7 +43,7 @@ public interface NutritionStatService {
      * @param command 营养建议命令对象
      * @return 营养建议列表
      */
-    List<NutritionAdviceDTO> getNutritionAdvice(NutritionAdviceCommand command);
+    List<NutritionAdviceDisplayDTO> getNutritionAdvice(NutritionAdviceCommand command);
 
     /**
      * 计算指定日期的营养达标率

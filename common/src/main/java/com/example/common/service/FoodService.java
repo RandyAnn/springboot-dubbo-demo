@@ -1,11 +1,10 @@
 package com.example.common.service;
 
-import com.example.common.command.FoodImageUpdateCommand;
-import com.example.common.command.FoodQueryCommand;
-import com.example.common.command.FoodSaveCommand;
-import com.example.common.command.FoodUpdateCommand;
-import com.example.common.dto.FoodItemDTO;
-import com.example.common.dto.FoodQueryDTO;
+import com.example.common.command.food.FoodImageUpdateCommand;
+import com.example.common.command.food.FoodQueryCommand;
+import com.example.common.command.food.FoodSaveCommand;
+import com.example.common.command.food.FoodUpdateCommand;
+import com.example.common.dto.food.FoodItemDTO;
 import com.example.common.response.PageResult;
 
 import java.util.List;

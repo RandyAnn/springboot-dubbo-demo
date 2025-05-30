@@ -1,6 +1,6 @@
 package com.example.common.service;
 
-import com.example.common.dto.HealthReportDTO;
+import com.example.common.dto.nutrition.HealthReportDTO;
 
 import java.time.LocalDate;
 

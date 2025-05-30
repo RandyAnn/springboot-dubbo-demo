@@ -3,9 +3,9 @@ package com.example.user.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.common.command.NutritionGoalCommand;
+import com.example.common.command.user.NutritionGoalCommand;
 
-import com.example.common.dto.UserNutritionGoalResponseDTO;
+import com.example.common.dto.user.UserNutritionGoalResponseDTO;
 import com.example.common.entity.UserNutritionGoal;
 import com.example.common.exception.BusinessException;
 import com.example.common.service.UserNutritionGoalService;
@@ -17,7 +17,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 

@@ -1,11 +1,11 @@
 package com.example.common.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.example.common.command.UserCreateCommand;
-import com.example.common.command.UserPageQueryCommand;
-import com.example.common.command.UserUpdateCommand;
-import com.example.common.dto.AvatarResponseDTO;
-import com.example.common.dto.UserInfoDTO;
+import com.example.common.command.user.UserCreateCommand;
+import com.example.common.command.user.UserPageQueryCommand;
+import com.example.common.command.user.UserUpdateCommand;
+import com.example.common.dto.user.AvatarResponseDTO;
+import com.example.common.dto.user.UserInfoDTO;
 import com.example.common.entity.User;
 import com.example.common.exception.BusinessException;
 import com.example.common.response.PageResult;

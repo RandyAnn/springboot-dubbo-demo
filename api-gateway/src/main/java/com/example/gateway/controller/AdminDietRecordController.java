@@ -1,9 +1,9 @@
 package com.example.gateway.controller;
 
-import com.example.common.command.DietRecordDeleteCommand;
-import com.example.common.command.DietRecordQueryCommand;
-import com.example.common.dto.DietRecordQueryDTO;
-import com.example.common.dto.DietRecordResponseDTO;
+import com.example.common.command.diet.DietRecordDeleteCommand;
+import com.example.common.command.diet.DietRecordQueryCommand;
+import com.example.common.dto.diet.DietRecordQueryDTO;
+import com.example.common.dto.diet.DietRecordResponseDTO;
 import com.example.common.exception.BusinessException;
 import com.example.common.response.ApiResponse;
 import com.example.common.response.PageResult;

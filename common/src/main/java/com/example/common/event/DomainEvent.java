@@ -1,5 +1,7 @@
 package com.example.common.event;
 
+import lombok.Getter;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -7,6 +9,7 @@ import java.util.UUID;
  * 领域事件抽象基类
  * 定义所有领域事件的通用属性和行为
  */
+@Getter
 public abstract class DomainEvent {
 
     /**
@@ -55,53 +58,6 @@ public abstract class DomainEvent {
         this.version = version;
         this.source = source;
     }
-
-    /**
-     * 获取事件唯一标识
-     *
-     * @return 事件ID
-     */
-    public String getEventId() {
-        return eventId;
-    }
-
-    /**
-     * 获取事件发生时间戳
-     *
-     * @return 时间戳
-     */
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    /**
-     * 获取聚合根ID
-     *
-     * @return 聚合根ID
-     */
-    public String getAggregateId() {
-        return aggregateId;
-    }
-
-    /**
-     * 获取事件版本
-     *
-     * @return 事件版本
-     */
-    public Long getVersion() {
-        return version;
-    }
-
-    /**
-     * 获取事件来源服务
-     *
-     * @return 来源服务
-     */
-    public String getSource() {
-        return source;
-    }
-
-
 
     @Override
     public String toString() {

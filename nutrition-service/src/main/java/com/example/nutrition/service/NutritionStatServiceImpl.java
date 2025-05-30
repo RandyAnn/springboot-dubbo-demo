@@ -1,11 +1,13 @@
 package com.example.nutrition.service;
 
-import com.example.common.command.DietRecordQueryCommand;
-import com.example.common.command.NutritionAdviceCommand;
-import com.example.common.command.NutritionStatCommand;
-import com.example.common.command.NutritionTrendCommand;
-import com.example.common.dto.*;
-import com.example.common.entity.NutritionAdvice;
+import com.example.common.command.diet.DietRecordQueryCommand;
+import com.example.common.command.nutrition.NutritionAdviceCommand;
+import com.example.common.command.nutrition.NutritionStatCommand;
+import com.example.common.command.nutrition.NutritionTrendCommand;
+import com.example.common.dto.diet.DietRecordFoodDTO;
+import com.example.common.dto.diet.DietRecordResponseDTO;
+import com.example.common.dto.nutrition.*;
+import com.example.common.dto.user.UserNutritionGoalResponseDTO;
 import com.example.common.response.PageResult;
 import com.example.common.service.DietRecordService;
 import com.example.common.service.NutritionAdviceService;
@@ -209,11 +211,11 @@ public class NutritionStatServiceImpl implements NutritionStatService {
 
     @Override
     @Cacheable(value = "nutritionStat", key = "'advice_' + #command.userId + '_' + #command.date")
-    public List<NutritionAdviceDTO> getNutritionAdvice(NutritionAdviceCommand command) {
+    public List<NutritionAdviceDisplayDTO> getNutritionAdvice(NutritionAdviceCommand command) {
         Long userId = command.getUserId();
         LocalDate date = command.getDate();
 
-        List<NutritionAdviceDTO> adviceList = new ArrayList<>();
+        List<NutritionAdviceDisplayDTO> adviceList = new ArrayList<>();
 
         // 获取当日营养摄入统计
         NutritionStatDTO nutritionStat = getDailyNutritionStat(NutritionStatCommand.of(userId, date));
@@ -251,7 +253,7 @@ public class NutritionStatServiceImpl implements NutritionStatService {
                 adviceList.add(convertResponseDTOToDTO(defaultAdvice));
             } else {
                 // 如果数据库中没有默认建议，使用硬编码的默认建议
-                adviceList.add(new NutritionAdviceDTO(
+                adviceList.add(new NutritionAdviceDisplayDTO(
                         "info",
                         "营养摄入基本合理",
                         "今日的营养摄入基本合理，保持均衡饮食有助于健康。"
@@ -532,11 +534,11 @@ public class NutritionStatServiceImpl implements NutritionStatService {
      * @param responseDTO 营养建议响应DTO
      * @return 营养建议DTO
      */
-    private NutritionAdviceDTO convertResponseDTOToDTO(NutritionAdviceResponseDTO responseDTO) {
+    private NutritionAdviceDisplayDTO convertResponseDTOToDTO(NutritionAdviceResponseDTO responseDTO) {
         if (responseDTO == null) {
             return null;
         }
-        return new NutritionAdviceDTO(
+        return new NutritionAdviceDisplayDTO(
                 responseDTO.getType(),
                 responseDTO.getTitle(),
                 responseDTO.getDescription()

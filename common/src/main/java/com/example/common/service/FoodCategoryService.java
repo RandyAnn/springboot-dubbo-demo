@@ -1,8 +1,8 @@
 package com.example.common.service;
 
-import com.example.common.command.FoodCategorySaveCommand;
-import com.example.common.command.FoodCategoryUpdateCommand;
-import com.example.common.dto.FoodCategoryDTO;
+import com.example.common.command.food.FoodCategorySaveCommand;
+import com.example.common.command.food.FoodCategoryUpdateCommand;
+import com.example.common.dto.food.FoodCategoryDTO;
 import com.example.common.response.PageResult;
 
 import java.util.List;

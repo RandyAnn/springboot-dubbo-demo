@@ -4,14 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.common.command.FoodCategorySaveCommand;
-import com.example.common.command.FoodCategoryUpdateCommand;
-import com.example.common.dto.FoodCategoryDTO;
+import com.example.common.command.food.FoodCategorySaveCommand;
+import com.example.common.command.food.FoodCategoryUpdateCommand;
+import com.example.common.dto.food.FoodCategoryDTO;
 import com.example.common.entity.FoodCategory;
 import com.example.common.response.PageResult;
 import com.example.common.service.FoodCategoryService;
 import com.example.food.mapper.FoodCategoryMapper;
-import org.apache.commons.lang3.StringUtils;
 
 import org.apache.dubbo.config.annotation.DubboService;
 import org.slf4j.Logger;
