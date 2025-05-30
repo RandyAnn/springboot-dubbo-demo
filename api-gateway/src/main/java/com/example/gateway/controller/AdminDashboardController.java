@@ -2,6 +2,7 @@ package com.example.gateway.controller;
 
 import com.example.common.command.DietRecordQueryCommand;
 import com.example.common.dto.*;
+import com.example.common.exception.BusinessException;
 import com.example.common.response.ApiResponse;
 import com.example.common.response.PageResult;
 import com.example.common.service.DietRecordService;
@@ -47,27 +48,23 @@ public class AdminDashboardController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
 
-        try {
-            // 获取总用户数（直接查询，性能更好）
-            long totalUsers = userService.getTotalUserCount();
-            stats.put("totalUsers", totalUsers);
+        // 获取总用户数（直接查询，性能更好）
+        long totalUsers = userService.getTotalUserCount();
+        stats.put("totalUsers", totalUsers);
 
-            // 获取今日饮食记录数
-            LocalDate today = LocalDate.now();
-            int todayRecords = dietRecordService.countDietRecordsByDate(today);
-            stats.put("todayRecords", todayRecords);
+        // 获取今日饮食记录数
+        LocalDate today = LocalDate.now();
+        int todayRecords = dietRecordService.countDietRecordsByDate(today);
+        stats.put("todayRecords", todayRecords);
 
-            // 计算营养达标率
-            double nutritionComplianceRate = nutritionStatService.calculateNutritionComplianceRate(today);
-            stats.put("nutritionComplianceRate", nutritionComplianceRate);
+        // 计算营养达标率
+        double nutritionComplianceRate = nutritionStatService.calculateNutritionComplianceRate(today);
+        stats.put("nutritionComplianceRate", nutritionComplianceRate);
 
-            // 推荐准确率（模拟数据）
-            stats.put("recommendationAccuracy", 95);
+        // 推荐准确率（模拟数据）
+        stats.put("recommendationAccuracy", 95);
 
-            return ResponseEntity.ok(ApiResponse.success(stats));
-        } catch (Exception e) {
-            return ResponseEntity.ok(ApiResponse.error(500, e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.success(stats));
     }
 
     /**
@@ -82,12 +79,8 @@ public class AdminDashboardController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getNutritionTrend(
             @RequestParam(required = false, defaultValue = "month") String period) {
 
-        try {
-            Map<String, Object> trendData = nutritionStatService.getAllNutritionTrend(period);
-            return ResponseEntity.ok(ApiResponse.success(trendData));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取营养摄入趋势数据失败"));
-        }
+        Map<String, Object> trendData = nutritionStatService.getAllNutritionTrend(period);
+        return ResponseEntity.ok(ApiResponse.success(trendData));
     }
 
     /**
@@ -100,19 +93,14 @@ public class AdminDashboardController {
     @GetMapping("/latest-diet-records")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<PageResult<DietRecordResponseDTO>>> getLatestDietRecords(DietRecordQueryDTO queryDTO) {
-        try {
-            // 构建查询命令对象
-            DietRecordQueryCommand command = new DietRecordQueryCommand();
-            BeanUtils.copyProperties(queryDTO, command);
+        // 构建查询命令对象
+        DietRecordQueryCommand command = new DietRecordQueryCommand();
+        BeanUtils.copyProperties(queryDTO, command);
 
-            // 直接调用getAllUsersDietRecords，它会处理userId的逻辑
-            PageResult<DietRecordResponseDTO> records = dietRecordService.getAllUsersDietRecords(command);
+        // 直接调用getAllUsersDietRecords，它会处理userId的逻辑
+        PageResult<DietRecordResponseDTO> records = dietRecordService.getAllUsersDietRecords(command);
 
-            return ResponseEntity.ok(ApiResponse.success(records));
-        } catch (Exception e) {
-            log.error("获取最新饮食记录失败", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取最新饮食记录失败"));
-        }
+        return ResponseEntity.ok(ApiResponse.success(records));
     }
 
     /**
@@ -124,18 +112,13 @@ public class AdminDashboardController {
     @GetMapping("/diet-record/{recordId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<DietRecordResponseDTO>> getDietRecordDetail(@PathVariable Long recordId) {
-        try {
-            DietRecordResponseDTO record = dietRecordService.getDietRecordDetail(recordId);
+        DietRecordResponseDTO record = dietRecordService.getDietRecordDetail(recordId);
 
-            if (record == null) {
-                return ResponseEntity.ok(ApiResponse.error(404, "记录不存在"));
-            }
-
-            return ResponseEntity.ok(ApiResponse.success(record));
-        } catch (Exception e) {
-            log.error("获取饮食记录详情失败，记录ID: {}", recordId, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取饮食记录详情失败"));
+        if (record == null) {
+            throw new BusinessException(404, "记录不存在");
         }
+
+        return ResponseEntity.ok(ApiResponse.success(record));
     }
 
     /**
@@ -150,13 +133,8 @@ public class AdminDashboardController {
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getPopularFoods(
             @RequestParam(required = false, defaultValue = "month") String period) {
 
-        try {
-            // 调用服务层获取热门食物数据
-            List<Map<String, Object>> popularFoods = dietRecordService.getPopularFoodsByPeriod(period, 10);
-            return ResponseEntity.ok(ApiResponse.success(popularFoods));
-        } catch (Exception e) {
-            log.error("获取热门食物统计数据失败，时间周期: {}", period, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取热门食物统计数据失败"));
-        }
+        // 调用服务层获取热门食物数据
+        List<Map<String, Object>> popularFoods = dietRecordService.getPopularFoodsByPeriod(period, 10);
+        return ResponseEntity.ok(ApiResponse.success(popularFoods));
     }
 }

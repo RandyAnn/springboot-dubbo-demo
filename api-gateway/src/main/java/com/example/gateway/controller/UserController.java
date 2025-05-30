@@ -100,18 +100,13 @@ public class UserController {
     @PostMapping("/avatar/upload-url")
     public ResponseEntity<ApiResponse<AvatarResponseDTO>> generateAvatarUploadUrl(
             @RequestParam("contentType") String contentType) {
-        try {
-            // 1. 获取当前用户ID
-            Long userId = SecurityContextUtil.getCurrentUserId();
+        // 1. 获取当前用户ID
+        Long userId = SecurityContextUtil.getCurrentUserId();
 
-            // 2. 调用Service层处理业务逻辑
-            AvatarResponseDTO response = userService.generateAvatarUploadUrl(userId, contentType);
+        // 2. 调用Service层处理业务逻辑
+        AvatarResponseDTO response = userService.generateAvatarUploadUrl(userId, contentType);
 
-            return ResponseEntity.ok(ApiResponse.success(response));
-        } catch (BusinessException e) {
-            return ResponseEntity.status(e.getCode())
-                    .body(ApiResponse.error(e.getCode(), e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     /**
@@ -122,17 +117,12 @@ public class UserController {
      */
     @GetMapping("/avatar")
     public ResponseEntity<ApiResponse<AvatarResponseDTO>> generateAvatarDownloadUrl() {
-        try {
-            // 1. 获取当前用户ID
-            Long userId = SecurityContextUtil.getCurrentUserId();
+        // 1. 获取当前用户ID
+        Long userId = SecurityContextUtil.getCurrentUserId();
 
-            // 2. 调用Service层处理业务逻辑
-            AvatarResponseDTO response = userService.generateAvatarDownloadUrl(userId);
+        // 2. 调用Service层处理业务逻辑
+        AvatarResponseDTO response = userService.generateAvatarDownloadUrl(userId);
 
-            return ResponseEntity.ok(ApiResponse.success(response));
-        } catch (BusinessException e) {
-            return ResponseEntity.status(e.getCode())
-                    .body(ApiResponse.error(e.getCode(), e.getMessage()));
-        }
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

@@ -5,6 +5,7 @@ import com.example.common.command.UserPageQueryCommand;
 import com.example.common.command.UserUpdateCommand;
 import com.example.common.dto.*;
 import com.example.common.entity.User;
+import com.example.common.exception.BusinessException;
 import com.example.common.response.ApiResponse;
 import com.example.common.response.PageResult;
 import com.example.common.service.FileService;
@@ -35,18 +36,13 @@ public class AdminUserController {
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<PageResult<UserInfoDTO>>> listUsers(UserQueryDTO queryDTO) {
-        try {
-            // 创建查询命令对象
-            UserPageQueryCommand command = new UserPageQueryCommand();
-            BeanUtils.copyProperties(queryDTO, command);
+        // 创建查询命令对象
+        UserPageQueryCommand command = new UserPageQueryCommand();
+        BeanUtils.copyProperties(queryDTO, command);
 
-            // 获取用户分页数据（已在服务层处理头像URL）
-            PageResult<UserInfoDTO> result = userService.getUserInfoPage(command);
-            return ResponseEntity.ok(ApiResponse.success(result));
-        } catch (Exception e) {
-            log.error("分页查询用户失败", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "分页查询用户失败"));
-        }
+        // 获取用户分页数据（已在服务层处理头像URL）
+        PageResult<UserInfoDTO> result = userService.getUserInfoPage(command);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**
@@ -55,21 +51,16 @@ public class AdminUserController {
     @PostMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<UserInfoDTO>> addUser(@RequestBody UserCreateRequestDTO requestDTO) {
-        try {
-            // 创建命令对象
-            UserCreateCommand command = new UserCreateCommand();
-            BeanUtils.copyProperties(requestDTO, command);
+        // 创建命令对象
+        UserCreateCommand command = new UserCreateCommand();
+        BeanUtils.copyProperties(requestDTO, command);
 
-            // 强制角色为普通用户
-            command.setRole("USER");
+        // 强制角色为普通用户
+        command.setRole("USER");
 
-            // 直接使用命令对象调用服务方法
-            UserInfoDTO createdUser = userService.createUser(command);
-            return ResponseEntity.ok(ApiResponse.success(createdUser));
-        } catch (Exception e) {
-            log.error("添加新用户失败", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "添加新用户失败"));
-        }
+        // 直接使用命令对象调用服务方法
+        UserInfoDTO createdUser = userService.createUser(command);
+        return ResponseEntity.ok(ApiResponse.success(createdUser));
     }
 
     /**
@@ -80,26 +71,21 @@ public class AdminUserController {
     public ResponseEntity<ApiResponse<UserInfoDTO>> updateUser(
             @PathVariable Long userId,
             @RequestBody UserUpdateRequestDTO requestDTO) {
-        try {
-            // 创建命令对象
-            UserUpdateCommand command = UserUpdateCommand.withUserId(userId);
+        // 创建命令对象
+        UserUpdateCommand command = UserUpdateCommand.withUserId(userId);
 
-            // 复制请求数据到命令对象
-            BeanUtils.copyProperties(requestDTO, command);
+        // 复制请求数据到命令对象
+        BeanUtils.copyProperties(requestDTO, command);
 
-            // 调用服务方法更新用户
-            boolean success = userService.updateUser(command);
-            if (!success) {
-                return ResponseEntity.status(500).body(ApiResponse.error(500, "更新用户信息失败"));
-            }
-
-            // 管理员接口需要返回完整用户信息，所以查询一次
-            UserInfoDTO updatedUser = userService.getUserById(userId);
-            return ResponseEntity.ok(ApiResponse.success(updatedUser));
-        } catch (Exception e) {
-            log.error("更新用户信息失败，用户ID: {}", userId, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "更新用户信息失败"));
+        // 调用服务方法更新用户
+        boolean success = userService.updateUser(command);
+        if (!success) {
+            throw new BusinessException(500, "更新用户信息失败");
         }
+
+        // 管理员接口需要返回完整用户信息，所以查询一次
+        UserInfoDTO updatedUser = userService.getUserById(userId);
+        return ResponseEntity.ok(ApiResponse.success(updatedUser));
     }
 
     /**
@@ -110,13 +96,8 @@ public class AdminUserController {
     public ResponseEntity<ApiResponse<Boolean>> updateUserStatus(
             @PathVariable Long userId,
             @RequestBody UserStatusUpdateDTO requestDTO) {
-        try {
-            boolean result = userService.updateUserStatus(userId, requestDTO.getStatus());
-            return ResponseEntity.ok(ApiResponse.success(result));
-        } catch (Exception e) {
-            log.error("更新用户状态失败，用户ID: {}", userId, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "更新用户状态失败"));
-        }
+        boolean result = userService.updateUserStatus(userId, requestDTO.getStatus());
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**
@@ -125,16 +106,11 @@ public class AdminUserController {
     @GetMapping("/users/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<UserInfoDTO>> getUserDetail(@PathVariable Long userId) {
-        try {
-            UserInfoDTO userInfo = userService.getUserById(userId);
-            if (userInfo == null) {
-                return ResponseEntity.notFound().build();
-            }
-            return ResponseEntity.ok(ApiResponse.success(userInfo));
-        } catch (Exception e) {
-            log.error("获取用户详情失败，用户ID: {}", userId, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取用户详情失败"));
+        UserInfoDTO userInfo = userService.getUserById(userId);
+        if (userInfo == null) {
+            throw new BusinessException(404, "用户不存在");
         }
+        return ResponseEntity.ok(ApiResponse.success(userInfo));
     }
 }
 

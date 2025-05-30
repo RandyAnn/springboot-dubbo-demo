@@ -7,6 +7,7 @@ import com.example.common.dto.DietRecordDTO;
 import com.example.common.dto.DietRecordQueryDTO;
 import com.example.common.dto.DietRecordRequestDTO;
 import com.example.common.dto.DietRecordResponseDTO;
+import com.example.common.exception.BusinessException;
 import com.example.common.response.ApiResponse;
 import com.example.common.response.PageResult;
 import com.example.common.service.DietRecordService;
@@ -86,7 +87,7 @@ public class DietRecordController {
         DietRecordResponseDTO record = dietRecordService.getDietRecordDetail(recordId);
 
         if (record == null) {
-            return ResponseEntity.ok(ApiResponse.error(404, "记录不存在"));
+            throw new BusinessException(404, "记录不存在");
         }
 
         return ResponseEntity.ok(ApiResponse.success(record));
@@ -105,7 +106,7 @@ public class DietRecordController {
         boolean success = dietRecordService.deleteDietRecord(command);
 
         if (!success) {
-            return ResponseEntity.ok(ApiResponse.error(400, "删除失败"));
+            throw new BusinessException(400, "删除失败");
         }
 
         return ResponseEntity.ok(ApiResponse.success(null));

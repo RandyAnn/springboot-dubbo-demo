@@ -4,6 +4,7 @@ import com.example.common.command.DietRecordDeleteCommand;
 import com.example.common.command.DietRecordQueryCommand;
 import com.example.common.dto.DietRecordQueryDTO;
 import com.example.common.dto.DietRecordResponseDTO;
+import com.example.common.exception.BusinessException;
 import com.example.common.response.ApiResponse;
 import com.example.common.response.PageResult;
 import com.example.common.service.DietRecordService;
@@ -31,18 +32,12 @@ public class AdminDietRecordController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<PageResult<DietRecordResponseDTO>>> getDietRecords(DietRecordQueryDTO queryDTO) {
-        try {
-            // 创建Command对象
-            DietRecordQueryCommand command = new DietRecordQueryCommand();
-            BeanUtils.copyProperties(queryDTO, command);
+        // 创建Command对象
+        DietRecordQueryCommand command = new DietRecordQueryCommand();
+        BeanUtils.copyProperties(queryDTO, command);
 
-            PageResult<DietRecordResponseDTO> result = dietRecordService.getAllUsersDietRecords(command);
-
-            return ResponseEntity.ok(ApiResponse.success(result));
-        } catch (Exception e) {
-            log.error("查询饮食记录失败", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "查询饮食记录失败"));
-        }
+        PageResult<DietRecordResponseDTO> result = dietRecordService.getAllUsersDietRecords(command);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**
@@ -51,16 +46,11 @@ public class AdminDietRecordController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<DietRecordResponseDTO>> getDietRecordDetail(@PathVariable("id") Long id) {
-        try {
-            DietRecordResponseDTO record = dietRecordService.getDietRecordDetail(id);
-            if (record == null) {
-                return ResponseEntity.ok(ApiResponse.error(404, "记录不存在"));
-            }
-            return ResponseEntity.ok(ApiResponse.success(record));
-        } catch (Exception e) {
-            log.error("获取饮食记录详情失败，记录ID: {}", id, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取饮食记录详情失败"));
+        DietRecordResponseDTO record = dietRecordService.getDietRecordDetail(id);
+        if (record == null) {
+            throw new BusinessException(404, "记录不存在");
         }
+        return ResponseEntity.ok(ApiResponse.success(record));
     }
 
     /**
@@ -69,17 +59,12 @@ public class AdminDietRecordController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Boolean>> deleteDietRecord(@PathVariable("id") Long id) {
-        try {
-            // 管理员删除记录，不需要验证用户ID
-            DietRecordDeleteCommand command = DietRecordDeleteCommand.of(null, id);
-            boolean result = dietRecordService.deleteDietRecord(command);
-            if (!result) {
-                return ResponseEntity.ok(ApiResponse.error(400, "删除失败"));
-            }
-            return ResponseEntity.ok(ApiResponse.success(true));
-        } catch (Exception e) {
-            log.error("删除饮食记录失败，记录ID: {}", id, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "删除饮食记录失败"));
+        // 管理员删除记录，不需要验证用户ID
+        DietRecordDeleteCommand command = DietRecordDeleteCommand.of(null, id);
+        boolean result = dietRecordService.deleteDietRecord(command);
+        if (!result) {
+            throw new BusinessException(400, "删除失败");
         }
+        return ResponseEntity.ok(ApiResponse.success(true));
     }
 }

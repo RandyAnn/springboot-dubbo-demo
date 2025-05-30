@@ -55,18 +55,13 @@ public class AdminFoodController {
     @GetMapping("/list")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<PageResult<FoodItemDTO>>> getFoodsByPage(FoodPageRequestDTO requestDTO) {
-        try {
-            // 转换为Command对象
-            FoodQueryCommand command = new FoodQueryCommand();
-            BeanUtils.copyProperties(requestDTO, command);
+        // 转换为Command对象
+        FoodQueryCommand command = new FoodQueryCommand();
+        BeanUtils.copyProperties(requestDTO, command);
 
-            // 调用服务方法
-            PageResult<FoodItemDTO> result = foodService.queryFoodsByPage(command);
-            return ResponseEntity.ok(ApiResponse.success(result));
-        } catch (Exception e) {
-            log.error("分页查询食物列表失败", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "分页查询食物列表失败"));
-        }
+        // 调用服务方法
+        PageResult<FoodItemDTO> result = foodService.queryFoodsByPage(command);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**
@@ -75,13 +70,8 @@ public class AdminFoodController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<FoodItemDTO>> getFoodById(@PathVariable("id") Integer id) {
-        try {
-            FoodItemDTO food = foodService.getFoodById(id);
-            return ResponseEntity.ok(ApiResponse.success(food));
-        } catch (Exception e) {
-            log.error("获取食物详情失败，食物ID: {}", id, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取食物详情失败"));
-        }
+        FoodItemDTO food = foodService.getFoodById(id);
+        return ResponseEntity.ok(ApiResponse.success(food));
     }
 
 
@@ -92,13 +82,8 @@ public class AdminFoodController {
     @GetMapping("/categories")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<FoodCategoryDTO>>> getAllCategories() {
-        try {
-            List<FoodCategoryDTO> categories = foodCategoryService.getAllCategories();
-            return ResponseEntity.ok(ApiResponse.success(categories));
-        } catch (Exception e) {
-            log.error("获取所有食物分类失败", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取所有食物分类失败"));
-        }
+        List<FoodCategoryDTO> categories = foodCategoryService.getAllCategories();
+        return ResponseEntity.ok(ApiResponse.success(categories));
     }
 
     /**
@@ -109,13 +94,8 @@ public class AdminFoodController {
     public ResponseEntity<ApiResponse<PageResult<FoodCategoryDTO>>> getCategoriesByPage(
             @RequestParam(value = "current", defaultValue = "1") Integer current,
             @RequestParam(value = "size", defaultValue = "15") Integer size) {
-        try {
-            PageResult<FoodCategoryDTO> result = foodCategoryService.getCategoriesByPage(current, size);
-            return ResponseEntity.ok(ApiResponse.success(result));
-        } catch (Exception e) {
-            log.error("分页查询食物分类失败", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "分页查询食物分类失败"));
-        }
+        PageResult<FoodCategoryDTO> result = foodCategoryService.getCategoriesByPage(current, size);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**
@@ -124,13 +104,8 @@ public class AdminFoodController {
     @GetMapping("/category/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<FoodCategoryDTO>> getCategoryById(@PathVariable("id") Integer id) {
-        try {
-            FoodCategoryDTO category = foodCategoryService.getCategoryById(id);
-            return ResponseEntity.ok(ApiResponse.success(category));
-        } catch (Exception e) {
-            log.error("获取食物分类详情失败，分类ID: {}", id, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取食物分类详情失败"));
-        }
+        FoodCategoryDTO category = foodCategoryService.getCategoryById(id);
+        return ResponseEntity.ok(ApiResponse.success(category));
     }
 
     /**
@@ -139,17 +114,12 @@ public class AdminFoodController {
     @PostMapping("/category")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<FoodCategoryDTO>> addCategory(@RequestBody FoodCategoryDTO categoryDTO) {
-        try {
-            // 创建命令对象
-            FoodCategorySaveCommand command = new FoodCategorySaveCommand();
-            BeanUtils.copyProperties(categoryDTO, command);
+        // 创建命令对象
+        FoodCategorySaveCommand command = new FoodCategorySaveCommand();
+        BeanUtils.copyProperties(categoryDTO, command);
 
-            FoodCategoryDTO savedCategory = foodCategoryService.saveCategory(command);
-            return ResponseEntity.ok(ApiResponse.success(savedCategory));
-        } catch (Exception e) {
-            log.error("添加食物分类失败", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "添加食物分类失败"));
-        }
+        FoodCategoryDTO savedCategory = foodCategoryService.saveCategory(command);
+        return ResponseEntity.ok(ApiResponse.success(savedCategory));
     }
 
     /**
@@ -160,18 +130,13 @@ public class AdminFoodController {
     public ResponseEntity<ApiResponse<Boolean>> updateCategory(
             @PathVariable("id") Integer id,
             @RequestBody FoodCategoryDTO categoryDTO) {
-        try {
-            // 创建命令对象
-            FoodCategoryUpdateCommand command = new FoodCategoryUpdateCommand();
-            BeanUtils.copyProperties(categoryDTO, command);
-            command.setId(id);
+        // 创建命令对象
+        FoodCategoryUpdateCommand command = new FoodCategoryUpdateCommand();
+        BeanUtils.copyProperties(categoryDTO, command);
+        command.setId(id);
 
-            boolean result = foodCategoryService.updateCategory(command);
-            return ResponseEntity.ok(ApiResponse.success(result));
-        } catch (Exception e) {
-            log.error("更新食物分类失败，分类ID: {}", id, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "更新食物分类失败"));
-        }
+        boolean result = foodCategoryService.updateCategory(command);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**
@@ -180,13 +145,8 @@ public class AdminFoodController {
     @DeleteMapping("/category/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Boolean>> deleteCategory(@PathVariable("id") Integer id) {
-        try {
-            boolean result = foodCategoryService.deleteCategory(id);
-            return ResponseEntity.ok(ApiResponse.success(result));
-        } catch (Exception e) {
-            log.error("删除食物分类失败，分类ID: {}", id, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "删除食物分类失败"));
-        }
+        boolean result = foodCategoryService.deleteCategory(id);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**
@@ -195,18 +155,13 @@ public class AdminFoodController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<FoodItemDTO>> addFood(@RequestBody FoodSaveRequestDTO requestDTO) {
-        try {
-            // 创建命令对象
-            FoodSaveCommand command = new FoodSaveCommand();
-            BeanUtils.copyProperties(requestDTO, command);
+        // 创建命令对象
+        FoodSaveCommand command = new FoodSaveCommand();
+        BeanUtils.copyProperties(requestDTO, command);
 
-            // 调用服务方法
-            FoodItemDTO savedFood = foodService.saveFood(command);
-            return ResponseEntity.ok(ApiResponse.success(savedFood));
-        } catch (Exception e) {
-            log.error("添加食物失败", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "添加食物失败"));
-        }
+        // 调用服务方法
+        FoodItemDTO savedFood = foodService.saveFood(command);
+        return ResponseEntity.ok(ApiResponse.success(savedFood));
     }
 
     /**
@@ -217,19 +172,14 @@ public class AdminFoodController {
     public ResponseEntity<ApiResponse<FoodItemDTO>> updateFood(
             @PathVariable("id") Integer id,
             @RequestBody FoodUpdateRequestDTO requestDTO) {
-        try {
-            // 创建命令对象
-            FoodUpdateCommand command = new FoodUpdateCommand();
-            BeanUtils.copyProperties(requestDTO, command);
-            command.setId(id);
+        // 创建命令对象
+        FoodUpdateCommand command = new FoodUpdateCommand();
+        BeanUtils.copyProperties(requestDTO, command);
+        command.setId(id);
 
-            // 调用服务方法
-            FoodItemDTO updatedFood = foodService.updateFood(command);
-            return ResponseEntity.ok(ApiResponse.success(updatedFood));
-        } catch (Exception e) {
-            log.error("更新食物失败，食物ID: {}", id, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "更新食物失败"));
-        }
+        // 调用服务方法
+        FoodItemDTO updatedFood = foodService.updateFood(command);
+        return ResponseEntity.ok(ApiResponse.success(updatedFood));
     }
 
     /**
@@ -238,13 +188,8 @@ public class AdminFoodController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Boolean>> deleteFood(@PathVariable("id") Integer id) {
-        try {
-            boolean result = foodService.deleteFood(id);
-            return ResponseEntity.ok(ApiResponse.success(result));
-        } catch (Exception e) {
-            log.error("删除食物失败，食物ID: {}", id, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "删除食物失败"));
-        }
+        boolean result = foodService.deleteFood(id);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**
@@ -255,19 +200,14 @@ public class AdminFoodController {
     public ResponseEntity<ApiResponse<String>> getUploadImageUrl(
             @RequestParam("foodId") Long foodId,
             @RequestParam("contentType") String contentType) {
-        try {
-            // 生成上传URL
-            String uploadUrl = fileService.generateUploadPresignedUrl(
-                    foodId,
-                    "foodimage",
-                    contentType,
-                    30); // 30分钟有效期
+        // 生成上传URL
+        String uploadUrl = fileService.generateUploadPresignedUrl(
+                foodId,
+                "foodimage",
+                contentType,
+                30); // 30分钟有效期
 
-            return ResponseEntity.ok(ApiResponse.success(uploadUrl));
-        } catch (Exception e) {
-            log.error("获取食物图片上传URL失败，食物ID: {}", foodId, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "获取食物图片上传URL失败"));
-        }
+        return ResponseEntity.ok(ApiResponse.success(uploadUrl));
     }
 
     /**
@@ -278,18 +218,13 @@ public class AdminFoodController {
     public ResponseEntity<ApiResponse<Boolean>> updateFoodImageUrl(
             @PathVariable("id") Integer id,
             @RequestBody FoodImageUpdateRequestDTO requestDTO) {
-        try {
-            // 创建命令对象
-            FoodImageUpdateCommand command = FoodImageUpdateCommand.withFoodId(id);
-            command.setImageUrl(requestDTO.getImageUrl());
+        // 创建命令对象
+        FoodImageUpdateCommand command = FoodImageUpdateCommand.withFoodId(id);
+        command.setImageUrl(requestDTO.getImageUrl());
 
-            // 调用服务方法
-            boolean result = foodService.updateFoodImageUrl(command);
-            return ResponseEntity.ok(ApiResponse.success(result));
-        } catch (Exception e) {
-            log.error("更新食物图片URL失败，食物ID: {}", id, e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "更新食物图片URL失败"));
-        }
+        // 调用服务方法
+        boolean result = foodService.updateFoodImageUrl(command);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**
@@ -304,15 +239,7 @@ public class AdminFoodController {
             return ResponseEntity.badRequest().body(ApiResponse.error(400, "请提供有效的食物数据"));
         }
 
-        try {
-            Map<String, Object> result = foodService.batchImportFoods(foods);
-            return ResponseEntity.ok(ApiResponse.success(result));
-        } catch (BusinessException e) {
-            log.error("批量导入食物数据业务异常", e);
-            return ResponseEntity.badRequest().body(ApiResponse.error(e.getCode(), "批量导入食物数据失败"));
-        } catch (Exception e) {
-            log.error("批量导入食物数据失败", e);
-            return ResponseEntity.status(500).body(ApiResponse.error(500, "批量导入食物数据失败"));
-        }
+        Map<String, Object> result = foodService.batchImportFoods(foods);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 }
