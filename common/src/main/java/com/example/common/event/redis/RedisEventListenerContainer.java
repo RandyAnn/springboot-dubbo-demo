@@ -98,7 +98,7 @@ public class RedisEventListenerContainer implements EventListenerContainer, Init
             if (valueSerializer == null) {
                 log.error("RedisTemplate value serializer is not configured correctly for DomainEvent deserialization.");
                 // 尝试使用 redisObjectMapper 作为备选，但这可能不完全符合 redisTemplate 的配置
-                // DomainEvent event = redisObjectMapper.readValue(body, DomainEvent.class); 
+                // DomainEvent event = redisObjectMapper.readValue(body, DomainEvent.class);
                 // 此处应确保valueSerializer被正确配置并获取
                  return;
             }
@@ -106,34 +106,34 @@ public class RedisEventListenerContainer implements EventListenerContainer, Init
             DomainEvent event = valueSerializer.deserialize(body);
 
             if (event != null) {
-                log.info("Deserialized event of type '{}' with ID '{}' from channel '{}'", 
-                         event.getEventType(), event.getEventId(), channel);
+                log.info("Deserialized event of type '{}' with ID '{}' from channel '{}'",
+                         event.getClass().getSimpleName(), event.getEventId(), channel);
                 for (MessageHandler handler : handlers) {
                     try {
                         if (handler instanceof DomainEventHandler) {
                             @SuppressWarnings("rawtypes")
                             DomainEventHandler domainEventHandler = (DomainEventHandler) handler;
                             if (domainEventHandler.supports(event.getClass())) {
-                                log.debug("Dispatching event {} to handler {}", event.getEventType(), handler.getClass().getName());
+                                log.debug("Dispatching event {} to handler {}", event.getClass().getSimpleName(), handler.getClass().getName());
                                 domainEventHandler.onMessage(event); // onMessage内部会调用handle
                             }
                         } else {
                             // 对于非 DomainEventHandler 的通用 MessageHandler，直接调用
-                            log.debug("Dispatching event {} to generic handler {}", event.getEventType(), handler.getClass().getName());
+                            log.debug("Dispatching event {} to generic handler {}", event.getClass().getSimpleName(), handler.getClass().getName());
                             handler.onMessage(event);
                         }
                     } catch (Exception e) {
-                        log.error("Error processing event {} with handler {}: {}", 
+                        log.error("Error processing event {} with handler {}: {}",
                                   event, handler.getClass().getName(), e.getMessage(), e);
                         // 单个处理器异常不应影响其他处理器
                     }
                 }
             } else {
-                log.warn("Deserialized event is null from channel '{}'. Message body (hex): {}", 
+                log.warn("Deserialized event is null from channel '{}'. Message body (hex): {}",
                          channel, bytesToHex(body));
             }
         } catch (Exception e) {
-            log.error("Error deserializing or processing message from Redis channel '{}': {}", 
+            log.error("Error deserializing or processing message from Redis channel '{}': {}",
                       channel, e.getMessage(), e);
             log.error("Failed message body (hex): {}", bytesToHex(body));
         }
@@ -147,4 +147,4 @@ public class RedisEventListenerContainer implements EventListenerContainer, Init
         }
         return sb.toString();
     }
-} 
+}

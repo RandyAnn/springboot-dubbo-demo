@@ -35,12 +35,12 @@ public class RedisEventPublisher implements EventPublisher {
             return;
         }
         try {
-            // 可以根据 event.getEventType() 或其他逻辑选择不同的channel
-            // String channel = DEFAULT_EVENT_CHANNEL + ":" + event.getEventType();
-            String channel = DEFAULT_EVENT_CHANNEL; 
-            log.info("Publishing event of type '{}' with ID '{}' to Redis channel '{}'", 
-                     event.getEventType(), event.getEventId(), channel);
-            
+            // 可以根据事件类型或其他逻辑选择不同的channel
+            // String channel = DEFAULT_EVENT_CHANNEL + ":" + event.getClass().getSimpleName();
+            String channel = DEFAULT_EVENT_CHANNEL;
+            log.info("Publishing event of type '{}' with ID '{}' to Redis channel '{}'",
+                     event.getClass().getSimpleName(), event.getEventId(), channel);
+
             // RedisTemplate 已经配置了序列化器 (GenericJackson2JsonRedisSerializer with redisObjectMapper)
             // 所以可以直接传递 event 对象，它会被正确序列化。
             redisTemplate.convertAndSend(channel, event);
@@ -50,4 +50,4 @@ public class RedisEventPublisher implements EventPublisher {
             // 根据需要处理异常，例如重试或记录到死信队列
         }
     }
-} 
+}

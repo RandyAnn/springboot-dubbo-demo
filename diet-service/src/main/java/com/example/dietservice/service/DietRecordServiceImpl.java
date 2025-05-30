@@ -12,6 +12,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import com.example.common.dto.*;
 import com.example.common.entity.DietRecord;
 import com.example.common.entity.DietRecordFood;
+import com.example.common.event.events.DietRecordAddedEvent;
+import com.example.common.event.EventPublisher;
 
 import com.example.common.response.PageResult;
 import com.example.common.service.DietRecordService;
@@ -46,15 +48,18 @@ public class DietRecordServiceImpl extends ServiceImpl<DietRecordMapper, DietRec
 
     private final DietRecordMapper dietRecordMapper;
     private final DietRecordFoodMapper dietRecordFoodMapper;
+    private final EventPublisher eventPublisher;
 
     @DubboReference
     private UserService userService;
 
     @Autowired
     public DietRecordServiceImpl(DietRecordMapper dietRecordMapper,
-                                 DietRecordFoodMapper dietRecordFoodMapper) {
+                                 DietRecordFoodMapper dietRecordFoodMapper,
+                                 EventPublisher eventPublisher) {
         this.dietRecordMapper = dietRecordMapper;
         this.dietRecordFoodMapper = dietRecordFoodMapper;
+        this.eventPublisher = eventPublisher;
     }
 
 
@@ -247,6 +252,23 @@ public class DietRecordServiceImpl extends ServiceImpl<DietRecordMapper, DietRec
             for (DietRecordFood food : foodList) {
                 dietRecordFoodMapper.insert(food);
             }
+        }
+
+        // 3. 发布饮食记录添加事件
+        try {
+            DietRecordAddedEvent event = new DietRecordAddedEvent(
+                command.getUserId(),
+                recordId,
+                dietRecord.getDate(),
+                command.getMealType()
+            );
+            eventPublisher.publish(event);
+            log.info("发布饮食记录添加事件: userId={}, recordId={}, date={}",
+                command.getUserId(), recordId, dietRecord.getDate());
+        } catch (Exception e) {
+            log.error("发布饮食记录添加事件失败: userId={}, recordId={}",
+                command.getUserId(), recordId, e);
+            // 事件发布失败不影响主业务流程
         }
 
         return recordId;
