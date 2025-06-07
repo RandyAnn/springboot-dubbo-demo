@@ -1,14 +1,14 @@
 package com.example.gateway.controller;
 
-import com.example.common.command.food.FoodQueryCommand;
-import com.example.common.dto.food.FoodCategoryDTO;
-import com.example.common.dto.food.FoodItemDTO;
-import com.example.common.dto.food.FoodQueryRequestDTO;
+import com.example.food.command.FoodQueryCommand;
+import com.example.food.dto.FoodCategoryDTO;
+import com.example.food.dto.FoodItemDTO;
+import com.example.food.dto.FoodQueryRequestDTO;
 import org.springframework.beans.BeanUtils;
-import com.example.common.response.ApiResponse;
-import com.example.common.response.PageResult;
-import com.example.common.service.FoodCategoryService;
-import com.example.common.service.FoodService;
+import com.example.shared.response.ApiResponse;
+import com.example.shared.response.PageResult;
+import com.example.food.service.FoodCategoryService;
+import com.example.food.service.FoodService;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

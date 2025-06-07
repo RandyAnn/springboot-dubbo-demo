@@ -1,7 +1,7 @@
 package com.example.file.service;
 
-import com.example.common.exception.BusinessException;
-import com.example.common.service.FileService;
+import com.example.shared.exception.BusinessException;
+import com.example.file.service.FileService;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

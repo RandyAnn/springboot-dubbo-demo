@@ -28,7 +28,7 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
-  type-aliases-package: com.example.common.entity
+  type-aliases-package: com.example.nutrition.entity
 
 dubbo:
   application:

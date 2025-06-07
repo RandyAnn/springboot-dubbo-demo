@@ -17,12 +17,18 @@
     </properties>
 
     <dependencies>
-        <!-- 依赖公共模块 -->
+        <!-- 依赖 shared-kernel 模块 -->
         <dependency>
             <groupId>com.example</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>shared-kernel</artifactId>
             <version>1.0.0</version>
-            <scope>compile</scope>
+        </dependency>
+
+        <!-- 依赖 file-api-contracts 模块 -->
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>file-api-contracts</artifactId>
+            <version>1.0.0</version>
         </dependency>
 
         <!-- Web依赖 -->
@@ -99,4 +105,4 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-</project> 
+</project>

@@ -1,14 +1,14 @@
 package com.example.gateway.controller;
 
-import com.example.common.command.diet.DietRecordQueryCommand;
-import com.example.common.dto.diet.DietRecordQueryDTO;
-import com.example.common.dto.diet.DietRecordResponseDTO;
-import com.example.common.exception.BusinessException;
-import com.example.common.response.ApiResponse;
-import com.example.common.response.PageResult;
-import com.example.common.service.DietRecordService;
-import com.example.common.service.NutritionStatService;
-import com.example.common.service.UserService;
+import com.example.diet.command.DietRecordQueryCommand;
+import com.example.diet.dto.DietRecordQueryDTO;
+import com.example.diet.dto.DietRecordResponseDTO;
+import com.example.shared.exception.BusinessException;
+import com.example.shared.response.ApiResponse;
+import com.example.shared.response.PageResult;
+import com.example.diet.service.DietRecordService;
+import com.example.nutrition.service.NutritionStatService;
+import com.example.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;

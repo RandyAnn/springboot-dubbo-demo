@@ -1,17 +1,17 @@
 package com.example.gateway.controller;
 
 import com.example.auth.service.AuthService;
-import com.example.common.command.user.UserCreateCommand;
-import com.example.common.dto.user.LoginRequestDTO;
-import com.example.common.dto.user.LoginResponseDTO;
-import com.example.common.dto.user.PasswordChangeRequestDTO;
-import com.example.common.dto.user.UserInfoDTO;
-import com.example.common.dto.user.WechatLoginRequestDTO;
-import com.example.common.entity.User;
-import com.example.common.exception.BusinessException;
-import com.example.common.response.ApiResponse;
-import com.example.common.service.UserService;
-import com.example.common.util.SecurityContextUtil;
+import com.example.user.command.UserCreateCommand;
+import com.example.user.dto.LoginRequestDTO;
+import com.example.user.dto.LoginResponseDTO;
+import com.example.user.dto.PasswordChangeRequestDTO;
+import com.example.user.dto.UserInfoDTO;
+import com.example.user.dto.WechatLoginRequestDTO;
+import com.example.user.dto.UserCreateRequestDTO;
+import com.example.shared.exception.BusinessException;
+import com.example.shared.response.ApiResponse;
+import com.example.user.service.UserService;
+import com.example.shared.util.SecurityContextUtil;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
@@ -48,10 +48,10 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<UserInfoDTO>> register(@RequestBody User user) {
+    public ResponseEntity<ApiResponse<UserInfoDTO>> register(@RequestBody UserCreateRequestDTO requestDTO) {
         // 创建UserCreateCommand对象并复制属性
         UserCreateCommand command = new UserCreateCommand();
-        BeanUtils.copyProperties(user, command);
+        BeanUtils.copyProperties(requestDTO, command);
 
         // 调用服务创建用户
         UserInfoDTO createdUser = userService.createUser(command);

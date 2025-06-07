@@ -1,6 +1,6 @@
 package com.example.gateway.config;
 
-import com.example.common.util.JwtUtil;
+import com.example.shared.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

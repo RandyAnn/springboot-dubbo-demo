@@ -3,12 +3,11 @@ package com.example.user.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.common.command.user.NutritionGoalCommand;
-
-import com.example.common.dto.user.UserNutritionGoalResponseDTO;
-import com.example.common.entity.UserNutritionGoal;
-import com.example.common.exception.BusinessException;
-import com.example.common.service.UserNutritionGoalService;
+import com.example.user.command.NutritionGoalCommand;
+import com.example.user.dto.UserNutritionGoalResponseDTO;
+import com.example.user.entity.UserNutritionGoal;
+import com.example.shared.exception.BusinessException;
+import com.example.user.service.UserNutritionGoalService;
 import com.example.user.mapper.UserNutritionGoalMapper;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.slf4j.Logger;

@@ -1,10 +1,10 @@
 package com.example.nutrition.service;
 
-import com.example.common.command.nutrition.NutritionAdviceManageCommand;
-import com.example.common.dto.nutrition.NutritionAdviceDisplayDTO;
-import com.example.common.dto.nutrition.NutritionAdviceResponseDTO;
-import com.example.common.entity.NutritionAdvice;
-import com.example.common.service.NutritionAdviceService;
+import com.example.nutrition.command.NutritionAdviceManageCommand;
+import com.example.nutrition.dto.NutritionAdviceDisplayDTO;
+import com.example.nutrition.dto.NutritionAdviceResponseDTO;
+import com.example.nutrition.entity.NutritionAdvice;
+import com.example.nutrition.service.NutritionAdviceService;
 import com.example.nutrition.mapper.NutritionAdviceMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
@@ -110,7 +110,6 @@ public class NutritionAdviceServiceImpl implements NutritionAdviceService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
-    @Override
     public NutritionAdviceDisplayDTO convertToDTO(NutritionAdvice advice) {
         if (advice == null) {
             return null;
@@ -124,7 +123,6 @@ public class NutritionAdviceServiceImpl implements NutritionAdviceService {
         return dto;
     }
 
-    @Override
     public NutritionAdviceResponseDTO convertToResponseDTO(NutritionAdvice advice) {
         if (advice == null) {
             return null;

@@ -1,12 +1,12 @@
 package com.example.gateway.controller;
 
-import com.example.common.command.nutrition.NutritionAdviceManageCommand;
-import com.example.common.dto.nutrition.NutritionAdviceManageRequestDTO;
-import com.example.common.dto.nutrition.NutritionAdviceResponseDTO;
-import com.example.common.exception.BusinessException;
-import com.example.common.response.ApiResponse;
-import com.example.common.service.NutritionAdviceService;
-import com.example.common.service.NutritionStatService;
+import com.example.nutrition.command.NutritionAdviceManageCommand;
+import com.example.nutrition.dto.NutritionAdviceManageRequestDTO;
+import com.example.nutrition.dto.NutritionAdviceResponseDTO;
+import com.example.shared.exception.BusinessException;
+import com.example.shared.response.ApiResponse;
+import com.example.nutrition.service.NutritionAdviceService;
+import com.example.nutrition.service.NutritionStatService;
 import lombok.extern.slf4j.Slf4j;
 import javax.validation.Valid;
 import org.apache.dubbo.config.annotation.DubboReference;

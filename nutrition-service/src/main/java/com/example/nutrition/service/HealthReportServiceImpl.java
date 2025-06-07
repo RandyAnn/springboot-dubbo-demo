@@ -1,11 +1,11 @@
 package com.example.nutrition.service;
 
-import com.example.common.command.nutrition.NutritionStatCommand;
-import com.example.common.dto.nutrition.*;
-import com.example.common.dto.user.UserNutritionGoalResponseDTO;
-import com.example.common.service.HealthReportService;
-import com.example.common.service.NutritionStatService;
-import com.example.common.service.UserNutritionGoalService;
+import com.example.nutrition.command.NutritionStatCommand;
+import com.example.nutrition.dto.*;
+import com.example.user.dto.UserNutritionGoalResponseDTO;
+import com.example.nutrition.service.HealthReportService;
+import com.example.nutrition.service.NutritionStatService;
+import com.example.user.service.UserNutritionGoalService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;

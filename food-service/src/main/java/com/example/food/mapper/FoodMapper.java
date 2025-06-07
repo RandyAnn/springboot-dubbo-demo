@@ -1,7 +1,7 @@
 package com.example.food.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.common.entity.Food;
+import com.example.food.entity.Food;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -9,4 +9,4 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface FoodMapper extends BaseMapper<Food> {
-} 
+}

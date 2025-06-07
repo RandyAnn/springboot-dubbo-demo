@@ -1,8 +1,8 @@
 package com.example.nutrition.event;
 
-import com.example.common.event.events.DietRecordAddedEvent;
-import com.example.common.event.DomainEvent;
-import com.example.common.event.DomainEventHandler;
+import com.example.diet.event.DietRecordAddedEvent;
+import com.example.shared.event.DomainEvent;
+import com.example.shared.event.DomainEventHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;

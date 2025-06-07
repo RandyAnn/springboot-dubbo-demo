@@ -15,7 +15,7 @@ spring:
 
 mybatis-plus:
   mapper-locations: classpath:/mapper/*.xml
-  type-aliases-package: com.example.common.entity
+  type-aliases-package: com.example.diet.entity
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
@@ -34,7 +34,7 @@ dubbo:
   registry:
     address: zookeeper://127.0.0.1:2181
   scan:
-    base-packages: com.example.dietservice.service
+    base-packages: com.example.diet.service
   provider:
     version: 3.1.0    # 服务提供者使用的版本
   consumer:

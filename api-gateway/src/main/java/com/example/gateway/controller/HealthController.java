@@ -1,9 +1,9 @@
 package com.example.gateway.controller;
 
-import com.example.common.dto.nutrition.HealthReportDTO;
-import com.example.common.response.ApiResponse;
-import com.example.common.service.HealthReportService;
-import com.example.common.util.SecurityContextUtil;
+import com.example.nutrition.dto.HealthReportDTO;
+import com.example.shared.response.ApiResponse;
+import com.example.nutrition.service.HealthReportService;
+import com.example.shared.util.SecurityContextUtil;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;

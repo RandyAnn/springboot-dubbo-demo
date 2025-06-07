@@ -1,10 +1,10 @@
 package com.example.auth.service;
 
-import com.example.common.dto.user.LoginRequestDTO;
-import com.example.common.dto.user.LoginResponseDTO;
-import com.example.common.dto.user.PasswordChangeRequestDTO;
-import com.example.common.dto.user.WechatLoginRequestDTO;
-import com.example.common.exception.BusinessException;
+import com.example.user.dto.LoginRequestDTO;
+import com.example.user.dto.LoginResponseDTO;
+import com.example.user.dto.PasswordChangeRequestDTO;
+import com.example.user.dto.WechatLoginRequestDTO;
+import com.example.shared.exception.BusinessException;
 
 public interface AuthService {
 //    LoginResponse login(LoginRequest request) throws BusinessException;

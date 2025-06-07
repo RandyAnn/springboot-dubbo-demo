@@ -3,15 +3,15 @@ package com.example.user.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.example.common.command.user.UserCreateCommand;
-import com.example.common.command.user.UserPageQueryCommand;
-import com.example.common.command.user.UserUpdateCommand;
-import com.example.common.dto.user.AvatarResponseDTO;
-import com.example.common.dto.user.UserInfoDTO;
-import com.example.common.response.PageResult;
-import com.example.common.entity.User;
-import com.example.common.exception.BusinessException;
-import com.example.common.service.UserService;
+import com.example.user.command.UserCreateCommand;
+import com.example.user.command.UserPageQueryCommand;
+import com.example.user.command.UserUpdateCommand;
+import com.example.user.dto.AvatarResponseDTO;
+import com.example.user.dto.UserInfoDTO;
+import com.example.shared.response.PageResult;
+import com.example.user.entity.User;
+import com.example.shared.exception.BusinessException;
+import com.example.user.service.UserService;
 import com.example.user.mapper.UserMapper;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
@@ -21,7 +21,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.common.service.FileService;
+import com.example.file.service.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -175,7 +175,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 将User实体转换为UserInfoDTO
      */
-    @Override
     public UserInfoDTO convertToDTO(User user) {
         if (user == null) {
             return null;

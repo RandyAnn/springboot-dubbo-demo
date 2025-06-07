@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.example</groupId>
+        <artifactId>spring-boot-dubbo-demo</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>diet-api-contracts</artifactId>
+    <packaging>jar</packaging>
+    <name>Diet API Contracts</name>
+    <description>Diet service API contracts including interfaces, DTOs and commands</description>
+
+    <dependencies>
+        <!-- 依赖 shared-kernel 获取通用类型 -->
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>shared-kernel</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- 依赖 food-api-contracts 因为饮食记录需要食物信息 -->
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>food-api-contracts</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- 依赖 user-api-contracts 因为饮食记录属于用户 -->
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>user-api-contracts</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- Dubbo -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Validation -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- Jackson for JSON -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+
+        <!-- JSR310 time support -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+</project>

@@ -54,11 +54,18 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- 依赖 shared-kernel 模块 -->
         <dependency>
             <groupId>com.example</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>shared-kernel</artifactId>
             <version>1.0.0</version>
-            <scope>compile</scope>
+        </dependency>
+
+        <!-- 依赖 user-api-contracts 模块 -->
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>user-api-contracts</artifactId>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

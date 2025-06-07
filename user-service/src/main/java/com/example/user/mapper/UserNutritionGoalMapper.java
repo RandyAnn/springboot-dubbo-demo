@@ -1,7 +1,7 @@
 package com.example.user.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.common.entity.UserNutritionGoal;
+import com.example.user.entity.UserNutritionGoal;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -9,4 +9,4 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface UserNutritionGoalMapper extends BaseMapper<UserNutritionGoal> {
-} 
+}

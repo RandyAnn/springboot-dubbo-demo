@@ -1,6 +1,6 @@
 package com.example.gateway.config;
 
-import com.example.common.util.JwtUtil;
+import com.example.shared.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

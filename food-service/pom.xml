@@ -12,13 +12,27 @@
     <artifactId>food-service</artifactId>
 
     <dependencies>
-        <!-- 通用依赖 -->
+        <!-- 依赖 shared-kernel 模块 -->
         <dependency>
             <groupId>com.example</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>shared-kernel</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
+        <!-- 依赖 food-api-contracts 模块 -->
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>food-api-contracts</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- 依赖 file-api-contracts 模块 -->
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>file-api-contracts</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- Spring Boot 依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -28,19 +42,19 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
-        
+
         <!-- MyBatis Plus -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
         </dependency>
-        
+
         <!-- MySQL连接驱动 -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
         </dependency>
-        
+
         <!-- Dubbo依赖 -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -72,4 +86,4 @@
             </plugin>
         </plugins>
     </build>
-</project> 
+</project>

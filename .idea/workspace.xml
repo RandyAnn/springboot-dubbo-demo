@@ -5,13 +5,58 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6ca00adb-9892-4225-88c0-4b1eda18a666" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/uiDesigner.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/config/JwtAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/config/JwtAuthenticationFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/AdminDashboardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/AdminDashboardController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/AdminDietRecordController.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/AdminDietRecordController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/AdminFoodController.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/AdminFoodController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/AdminNutritionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/AdminNutritionController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/AdminUserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/AdminUserController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/DietRecordController.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/DietRecordController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/FoodController.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/FoodController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/HealthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/HealthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/NutritionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/NutritionController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/com/example/gateway/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/com/example/auth/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/com/example/auth/service/AuthService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/com/example/auth/service/AuthServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/com/example/auth/service/AuthServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/common/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/src/main/resources/META-INF/spring.factories" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/resources/META-INF/spring.factories" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/com/example/auth/service/impl/AuthServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/com/example/auth/service/impl/AuthServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/src/main/java/com/example/common/entity/NutritionAdvice.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/diet-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/diet-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/diet-service/src/main/java/com/example/dietservice/DietServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/diet-service/src/main/java/com/example/diet/DietServiceApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/diet-service/src/main/java/com/example/dietservice/mapper/DietRecordFoodMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/diet-service/src/main/java/com/example/diet/mapper/DietRecordFoodMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/diet-service/src/main/java/com/example/dietservice/mapper/DietRecordMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/diet-service/src/main/java/com/example/diet/mapper/DietRecordMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/diet-service/src/main/java/com/example/dietservice/service/DietRecordServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/diet-service/src/main/java/com/example/diet/service/DietRecordServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/diet-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/diet-service/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/file-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/file-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/file-service/src/main/java/com/example/file/service/CloudflareR2FileServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/file-service/src/main/java/com/example/file/service/CloudflareR2FileServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/food-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/food-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/food-service/src/main/java/com/example/food/mapper/FoodCategoryMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/food-service/src/main/java/com/example/food/mapper/FoodCategoryMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/food-service/src/main/java/com/example/food/mapper/FoodMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/food-service/src/main/java/com/example/food/mapper/FoodMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/food-service/src/main/java/com/example/food/service/FoodCategoryServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/food-service/src/main/java/com/example/food/service/FoodCategoryServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/food-service/src/main/java/com/example/food/service/FoodServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/food-service/src/main/java/com/example/food/service/FoodServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/food-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/food-service/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nutrition-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/nutrition-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nutrition-service/src/main/java/com/example/nutrition/event/DietRecordAddedEventHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/nutrition-service/src/main/java/com/example/nutrition/event/DietRecordAddedEventHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nutrition-service/src/main/java/com/example/nutrition/mapper/NutritionAdviceMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/nutrition-service/src/main/java/com/example/nutrition/mapper/NutritionAdviceMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nutrition-service/src/main/java/com/example/nutrition/mapper/NutritionStatMapper.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/nutrition-service/src/main/java/com/example/nutrition/service/HealthReportServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/nutrition-service/src/main/java/com/example/nutrition/service/HealthReportServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nutrition-service/src/main/java/com/example/nutrition/service/NutritionAdviceServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/nutrition-service/src/main/java/com/example/nutrition/service/NutritionAdviceServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nutrition-service/src/main/java/com/example/nutrition/service/NutritionStatServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/nutrition-service/src/main/java/com/example/nutrition/service/NutritionStatServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nutrition-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/nutrition-service/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/example/user/mapper/UserMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/example/user/mapper/UserMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/example/user/mapper/UserNutritionGoalMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/example/user/mapper/UserNutritionGoalMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/example/user/service/UserNutritionGoalServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/example/user/service/UserNutritionGoalServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/com/example/user/service/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/com/example/user/service/UserServiceImpl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,6 +72,9 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
@@ -50,7 +98,6 @@
     "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
     "jdk.selected.JAVA_MODULE": "corretto-1.8",
     "last_opened_file_path": "D:/IdeaProjects/spring-boot-dubbo-demo",
@@ -58,42 +105,48 @@
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
-    "project.structure.last.edited": "模块",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
-    "settings.editor.selected.configurable": "reference.settings.project.maven.repository.indices",
-    "spring.configuration.checksum": "ea854ebfc701bc84a64c462a0e91b2f9",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "问题",
+    "project.structure.proportion": "0.15429688",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "reference.projectsettings.compiler.javacompiler",
+    "spring.configuration.checksum": "f7bab66112e45b9b51dcd269ce0ba59b",
     "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mysql"
+    ]
   }
 }]]></component>
+  <component name="ReactorSettings">
+    <option name="notificationShown" value="true" />
+  </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\IdeaProjects\spring-boot-dubbo-demo" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\IdeaProjects\spring-boot-dubbo-demo\nutrition-service\src\main\java\com\example\nutrition\mapper" />
+      <recent name="D:\IdeaProjects\spring-boot-dubbo-demo\common\src\main\java\com\example\common\entity" />
+      <recent name="D:\IdeaProjects\spring-boot-dubbo-demo\common\src\main\java\com\example\common\dto" />
+      <recent name="D:\IdeaProjects\spring-boot-dubbo-demo" />
+      <recent name="D:\IdeaProjects\spring-boot-dubbo-demo\images" />
+    </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
       <recent name="com.example" />
     </key>
   </component>
   <component name="RunManager" selected="Spring Boot.ApiGatewayApplication">
-    <configuration name="App" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.example.user.App" />
-      <module name="user-service" />
+    <configuration name="com.example.common.App" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.example.common.App" />
+      <module name="common" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="com.example.user.*" />
+          <option name="PATTERN" value="com.example.common.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="JetRunConfigurationType">
-      <module name="api-gateway" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <module name="api-gateway" />
-      <option name="filePath" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -111,6 +164,19 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="App" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <module name="test" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.App" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.example.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="AuthServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
       <module name="auth-service" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.auth.AuthServiceApplication" />
@@ -120,6 +186,34 @@
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="DietServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="diet-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.diet.DietServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="FileServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="file-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.file.FileServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="FoodServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="food-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.food.FoodServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NutritionServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="nutrition-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.nutrition.NutritionServiceApplication" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -142,7 +236,8 @@
         <item itemvalue="Spring Boot.ApiGatewayApplication" />
         <item itemvalue="Spring Boot.AuthServiceApplication" />
         <item itemvalue="Spring Boot.UserServiceApplication" />
-        <item itemvalue="应用程序.App" />
+        <item itemvalue="Spring Boot.App" />
+        <item itemvalue="应用程序.com.example.common.App" />
       </list>
     </recent_temporary>
   </component>
@@ -164,11 +259,161 @@
       <workItem from="1741830358144" duration="8357000" />
       <workItem from="1741910654752" duration="10481000" />
       <workItem from="1741960814213" duration="2565000" />
-      <workItem from="1742002207149" duration="874000" />
+      <workItem from="1742002207149" duration="10802000" />
+      <workItem from="1742109050915" duration="6397000" />
+      <workItem from="1742123163629" duration="1402000" />
+      <workItem from="1742168861220" duration="1895000" />
+      <workItem from="1742517290432" duration="433000" />
+      <workItem from="1742893486790" duration="9000" />
+      <workItem from="1743247389101" duration="1271000" />
+      <workItem from="1743403011831" duration="3019000" />
+      <workItem from="1743577744018" duration="4946000" />
+      <workItem from="1743664072318" duration="7356000" />
+      <workItem from="1743750581347" duration="1761000" />
+      <workItem from="1743836627388" duration="3607000" />
+      <workItem from="1743849542883" duration="714000" />
+      <workItem from="1743852028501" duration="2647000" />
+      <workItem from="1743924874086" duration="6425000" />
+      <workItem from="1744010591307" duration="5282000" />
+      <workItem from="1744100005047" duration="690000" />
+      <workItem from="1744180112677" duration="10613000" />
+      <workItem from="1744266527409" duration="4877000" />
+      <workItem from="1744273223444" duration="3480000" />
+      <workItem from="1744283444557" duration="108000" />
+      <workItem from="1744283562350" duration="50000" />
+      <workItem from="1744283644200" duration="3239000" />
+      <workItem from="1744456800710" duration="6811000" />
+      <workItem from="1744507949405" duration="8562000" />
+      <workItem from="1744530088362" duration="1909000" />
+      <workItem from="1744532009574" duration="83000" />
+      <workItem from="1744532100501" duration="1784000" />
+      <workItem from="1744533904587" duration="1257000" />
+      <workItem from="1744594186474" duration="1350000" />
+      <workItem from="1744681167351" duration="1457000" />
+      <workItem from="1744788608332" duration="3809000" />
+      <workItem from="1744875347144" duration="605000" />
+      <workItem from="1745046691901" duration="5796000" />
+      <workItem from="1745132934562" duration="8759000" />
+      <workItem from="1745199651067" duration="7428000" />
+      <workItem from="1745286612311" duration="1917000" />
+      <workItem from="1745370408163" duration="8387000" />
+      <workItem from="1745478455467" duration="4162000" />
+      <workItem from="1745651754635" duration="731000" />
+      <workItem from="1745656034653" duration="89000" />
+      <workItem from="1745656136160" duration="1554000" />
+      <workItem from="1745737480221" duration="6695000" />
+      <workItem from="1745822406288" duration="2096000" />
+      <workItem from="1745892407823" duration="5466000" />
+      <workItem from="1745978972462" duration="7962000" />
+      <workItem from="1746341669390" duration="6392000" />
+      <workItem from="1746410687767" duration="11557000" />
+      <workItem from="1746519052878" duration="6170000" />
+      <workItem from="1746582961853" duration="10431000" />
+      <workItem from="1746688672563" duration="5781000" />
+      <workItem from="1746778141266" duration="3871000" />
+      <workItem from="1746843282305" duration="18377000" />
+      <workItem from="1746928541590" duration="10867000" />
+      <workItem from="1747033658714" duration="6087000" />
+      <workItem from="1747100851815" duration="17468000" />
+      <workItem from="1747185443398" duration="24322000" />
+      <workItem from="1747292810746" duration="6209000" />
+      <workItem from="1747376374142" duration="3000" />
+      <workItem from="1747377912380" duration="2302000" />
+      <workItem from="1747445860176" duration="4210000" />
+      <workItem from="1747450636314" duration="25895000" />
+      <workItem from="1747552294088" duration="13928000" />
+      <workItem from="1747903007881" duration="842000" />
+      <workItem from="1748069349417" duration="8350000" />
+      <workItem from="1748135110120" duration="4407000" />
+      <workItem from="1748256934631" duration="3107000" />
+      <workItem from="1748310376186" duration="17737000" />
+      <workItem from="1748394330996" duration="26488000" />
+      <workItem from="1748499303255" duration="17639000" />
+      <workItem from="1748565899540" duration="23583000" />
+      <workItem from="1749210645899" duration="6450000" />
+      <workItem from="1749217139420" duration="653000" />
+      <workItem from="1749258327338" duration="15557000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ID_ORDER">
+      <list>
+        <option value="Default.Root" />
+        <option value="Default.Author" />
+        <option value="Default.Date" />
+        <option value="Default.Subject" />
+        <option value="Space.CommitStatus" />
+      </list>
+    </option>
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="0276bc61-e75d-4819-abf4-01f5a5cdae60" value="TOOL_WINDOW" />
+        <entry key="2cb2d518-e671-4a93-aac3-f64571d17416" value="TOOL_WINDOW" />
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="0276bc61-e75d-4819-abf4-01f5a5cdae60">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="structure">
+                    <value>
+                      <list>
+                        <option value="dir:D:/IdeaProjects/spring-boot-dubbo-demo/common/src/main/java/com/example/common/service" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+            </State>
+          </value>
+        </entry>
+        <entry key="2cb2d518-e671-4a93-aac3-f64571d17416">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="structure">
+                    <value>
+                      <list>
+                        <option value="dir:D:/IdeaProjects/spring-boot-dubbo-demo/nutrition-service/src/main/java/com/example/nutrition/service" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

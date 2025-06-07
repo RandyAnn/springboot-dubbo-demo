@@ -1,15 +1,15 @@
 package com.example.auth.service.impl;
 
 import com.example.auth.service.AuthService;
-import com.example.common.command.user.UserCreateCommand;
-import com.example.common.dto.user.LoginRequestDTO;
-import com.example.common.dto.user.LoginResponseDTO;
-import com.example.common.dto.user.PasswordChangeRequestDTO;
-import com.example.common.dto.user.UserInfoDTO;
-import com.example.common.dto.user.WechatLoginRequestDTO;
-import com.example.common.exception.BusinessException;
-import com.example.common.service.UserService;
-import com.example.common.util.JwtUtil;
+import com.example.user.command.UserCreateCommand;
+import com.example.user.dto.LoginRequestDTO;
+import com.example.user.dto.LoginResponseDTO;
+import com.example.user.dto.PasswordChangeRequestDTO;
+import com.example.user.dto.UserInfoDTO;
+import com.example.user.dto.WechatLoginRequestDTO;
+import com.example.shared.exception.BusinessException;
+import com.example.user.service.UserService;
+import com.example.shared.util.JwtUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.dubbo.config.annotation.DubboReference;

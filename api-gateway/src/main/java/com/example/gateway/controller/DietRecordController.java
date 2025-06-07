@@ -1,16 +1,16 @@
 package com.example.gateway.controller;
 
-import com.example.common.command.diet.DietRecordAddCommand;
-import com.example.common.command.diet.DietRecordDeleteCommand;
-import com.example.common.command.diet.DietRecordQueryCommand;
-import com.example.common.dto.diet.DietRecordQueryDTO;
-import com.example.common.dto.diet.DietRecordRequestDTO;
-import com.example.common.dto.diet.DietRecordResponseDTO;
-import com.example.common.exception.BusinessException;
-import com.example.common.response.ApiResponse;
-import com.example.common.response.PageResult;
-import com.example.common.service.DietRecordService;
-import com.example.common.util.SecurityContextUtil;
+import com.example.diet.command.DietRecordAddCommand;
+import com.example.diet.command.DietRecordDeleteCommand;
+import com.example.diet.command.DietRecordQueryCommand;
+import com.example.diet.dto.DietRecordQueryDTO;
+import com.example.diet.dto.DietRecordRequestDTO;
+import com.example.diet.dto.DietRecordResponseDTO;
+import com.example.shared.exception.BusinessException;
+import com.example.shared.response.ApiResponse;
+import com.example.shared.response.PageResult;
+import com.example.diet.service.DietRecordService;
+import com.example.shared.util.SecurityContextUtil;
 import org.springframework.beans.BeanUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.http.ResponseEntity;

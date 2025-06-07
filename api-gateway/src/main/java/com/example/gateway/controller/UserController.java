@@ -1,12 +1,12 @@
 package com.example.gateway.controller;
 
-import com.example.common.command.user.NutritionGoalCommand;
-import com.example.common.command.user.UserUpdateCommand;
-import com.example.common.dto.user.*;
-import com.example.common.response.ApiResponse;
-import com.example.common.service.UserNutritionGoalService;
-import com.example.common.service.UserService;
-import com.example.common.util.SecurityContextUtil;
+import com.example.user.command.NutritionGoalCommand;
+import com.example.user.command.UserUpdateCommand;
+import com.example.user.dto.*;
+import com.example.shared.response.ApiResponse;
+import com.example.user.service.UserNutritionGoalService;
+import com.example.user.service.UserService;
+import com.example.shared.util.SecurityContextUtil;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
@@ -115,12 +115,16 @@ public class UserController {
      * 2. 调用Service层
      */
     @GetMapping("/avatar")
-    public ResponseEntity<ApiResponse<AvatarResponseDTO>> generateAvatarDownloadUrl() {
+    public ResponseEntity<ApiResponse<AvatarResponseDTO>> getAvatarUrl() {
         // 1. 获取当前用户ID
         Long userId = SecurityContextUtil.getCurrentUserId();
 
-        // 2. 调用Service层处理业务逻辑
-        AvatarResponseDTO response = userService.generateAvatarDownloadUrl(userId);
+        // 2. 获取用户信息，从中提取头像URL
+        UserInfoDTO userInfo = userService.getUserById(userId);
+
+        // 3. 构造响应对象
+        AvatarResponseDTO response = new AvatarResponseDTO();
+        response.setAvatarUrl(userInfo.getAvatarUrl());
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
