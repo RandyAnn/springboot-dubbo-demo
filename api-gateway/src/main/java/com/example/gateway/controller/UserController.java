@@ -112,19 +112,15 @@ public class UserController {
      * 获取用户头像URL
      * Controller层只负责：
      * 1. 获取当前用户ID
-     * 2. 调用Service层
+     * 2. 调用Service层生成预签名URL
      */
     @GetMapping("/avatar")
     public ResponseEntity<ApiResponse<AvatarResponseDTO>> getAvatarUrl() {
         // 1. 获取当前用户ID
         Long userId = SecurityContextUtil.getCurrentUserId();
 
-        // 2. 获取用户信息，从中提取头像URL
-        UserInfoDTO userInfo = userService.getUserById(userId);
-
-        // 3. 构造响应对象
-        AvatarResponseDTO response = new AvatarResponseDTO();
-        response.setAvatarUrl(userInfo.getAvatarUrl());
+        // 2. 调用Service层生成预签名下载URL
+        AvatarResponseDTO response = userService.generateAvatarDownloadUrl(userId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
