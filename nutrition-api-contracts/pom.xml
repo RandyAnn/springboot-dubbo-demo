@@ -20,21 +20,18 @@
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>shared-kernel</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- 依赖 diet-api-contracts 因为营养分析需要饮食记录信息 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>diet-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- 依赖 user-api-contracts 因为营养分析属于用户 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>user-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- Dubbo -->

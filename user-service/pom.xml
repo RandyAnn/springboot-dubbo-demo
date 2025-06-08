@@ -22,21 +22,18 @@
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>shared-kernel</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- 依赖 user-api-contracts 模块 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>user-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- 依赖 file-api-contracts 模块 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>file-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- Spring Boot 依赖 -->
@@ -87,9 +84,8 @@
 
         <!-- 测试依赖 -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

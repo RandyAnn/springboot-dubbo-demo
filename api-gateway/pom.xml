@@ -7,7 +7,7 @@
         <version>1.0.0</version>
     </parent>
 
-    <groupId>org.example</groupId>
+    <groupId>com.example</groupId>
     <artifactId>api-gateway</artifactId>
     <packaging>jar</packaging>
 
@@ -46,54 +46,46 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- 依赖 shared-kernel 模块 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>shared-kernel</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- 依赖所有 api-contracts 模块 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>user-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>food-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>diet-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>nutrition-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>file-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- 依赖 auth-service 模块 -->
         <dependency>
-            <groupId>org.example</groupId>
+            <groupId>com.example</groupId>
             <artifactId>auth-service</artifactId>
-            <version>1.0.0</version>
             <scope>compile</scope>
         </dependency>
 
@@ -101,13 +93,11 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
-            <version>2.20.109</version>
         </dependency>
 
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>url-connection-client</artifactId>
-            <version>2.20.109</version>
         </dependency>
     </dependencies>
 </project>

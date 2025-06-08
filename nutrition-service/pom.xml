@@ -16,28 +16,24 @@
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>shared-kernel</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- 依赖 nutrition-api-contracts 模块 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>nutrition-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- 依赖 diet-api-contracts 模块 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>diet-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- 依赖 user-api-contracts 模块 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>user-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- Spring Boot 依赖 -->
@@ -62,7 +58,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
+                    <artifactId>slf4j-reload4j</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -83,7 +79,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
 
         <!-- 测试依赖 -->

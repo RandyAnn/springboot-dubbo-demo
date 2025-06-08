@@ -16,28 +16,24 @@
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>shared-kernel</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- 依赖 diet-api-contracts 模块 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>diet-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- 依赖 food-api-contracts 模块 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>food-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- 依赖 user-api-contracts 模块 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>user-api-contracts</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- Spring Boot Starter -->
@@ -85,7 +81,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.13.0</version>
         </dependency>
     </dependencies>
 
