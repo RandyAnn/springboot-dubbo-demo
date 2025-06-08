@@ -7,9 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
 
-@Component // 或者在Config中@Bean声明
 public class RedisEventPublisher implements EventPublisher {
 
     private static final Logger log = LoggerFactory.getLogger(RedisEventPublisher.class);

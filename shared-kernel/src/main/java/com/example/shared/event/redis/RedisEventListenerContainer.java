@@ -17,13 +17,11 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.RedisSerializer;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@Component // 或者在Config中@Bean声明
 public class RedisEventListenerContainer implements EventListenerContainer, InitializingBean, DisposableBean, MessageListener {
 
     private static final Logger log = LoggerFactory.getLogger(RedisEventListenerContainer.class);
