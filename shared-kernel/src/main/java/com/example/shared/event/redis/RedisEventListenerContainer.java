@@ -27,7 +27,7 @@ public class RedisEventListenerContainer implements EventListenerContainer, Init
     private static final Logger log = LoggerFactory.getLogger(RedisEventListenerContainer.class);
 
     private final RedisMessageListenerContainer redisContainer;
-    private final ObjectMapper redisObjectMapper; // 用于反序列化
+    private final ObjectMapper eventObjectMapper; // 用于反序列化
     private final RedisTemplate<String, Object> redisTemplate; // 用于获取序列化器
 
     private final List<MessageHandler> handlers = new CopyOnWriteArrayList<>();
@@ -36,10 +36,10 @@ public class RedisEventListenerContainer implements EventListenerContainer, Init
     private static final String DEFAULT_EVENT_CHANNEL = "domain-events";
 
     public RedisEventListenerContainer(RedisMessageListenerContainer redisContainer,
-                                       @Qualifier("redisObjectMapper") ObjectMapper redisObjectMapper,
+                                       @Qualifier("eventObjectMapper") ObjectMapper eventObjectMapper,
                                        RedisTemplate<String, Object> redisTemplate) {
         this.redisContainer = redisContainer;
-        this.redisObjectMapper = redisObjectMapper;
+        this.eventObjectMapper = eventObjectMapper;
         this.redisTemplate = redisTemplate;
     }
 
@@ -91,17 +91,25 @@ public class RedisEventListenerContainer implements EventListenerContainer, Init
 
         try {
             // 获取 RedisTemplate 中配置的 valueSerializer 用于反序列化
-            @SuppressWarnings("unchecked")
-            RedisSerializer<DomainEvent> valueSerializer = (RedisSerializer<DomainEvent>) redisTemplate.getValueSerializer();
+            RedisSerializer<?> valueSerializer = redisTemplate.getValueSerializer();
             if (valueSerializer == null) {
                 log.error("RedisTemplate value serializer is not configured correctly for DomainEvent deserialization.");
-                // 尝试使用 redisObjectMapper 作为备选，但这可能不完全符合 redisTemplate 的配置
-                // DomainEvent event = redisObjectMapper.readValue(body, DomainEvent.class);
-                // 此处应确保valueSerializer被正确配置并获取
-                 return;
+                return;
             }
 
-            DomainEvent event = valueSerializer.deserialize(body);
+            // 反序列化消息
+            Object deserializedObject = valueSerializer.deserialize(body);
+
+            // 检查反序列化结果的类型
+            DomainEvent event = null;
+            if (deserializedObject instanceof DomainEvent) {
+                event = (DomainEvent) deserializedObject;
+            } else {
+                log.error("Deserialized object is not a DomainEvent. Actual type: {}, Object: {}",
+                         deserializedObject != null ? deserializedObject.getClass().getName() : "null",
+                         deserializedObject);
+                return;
+            }
 
             if (event != null) {
                 log.info("Deserialized event of type '{}' with ID '{}' from channel '{}'",

@@ -15,27 +15,34 @@ public abstract class DomainEvent {
     /**
      * 事件唯一标识
      */
-    private final String eventId = UUID.randomUUID().toString();
+    private String eventId;
 
     /**
      * 事件发生时间戳
      */
-    private final Instant timestamp = Instant.now();
+    private Instant timestamp;
 
     /**
      * 聚合根ID
      */
-    private final String aggregateId;
+    private String aggregateId;
 
     /**
      * 事件版本
      */
-    private final Long version;
+    private Long version;
 
     /**
      * 事件来源服务
      */
-    private final String source;
+    private String source;
+
+    /**
+     * 默认构造函数 - 用于Jackson反序列化
+     */
+    protected DomainEvent() {
+        // Jackson会通过反射设置字段值
+    }
 
     /**
      * 构造函数
@@ -54,6 +61,8 @@ public abstract class DomainEvent {
      * @param source 事件来源服务
      */
     protected DomainEvent(String aggregateId, Long version, String source) {
+        this.eventId = UUID.randomUUID().toString();
+        this.timestamp = Instant.now();
         this.aggregateId = aggregateId;
         this.version = version;
         this.source = source;

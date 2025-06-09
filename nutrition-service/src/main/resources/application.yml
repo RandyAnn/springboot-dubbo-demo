@@ -20,6 +20,29 @@ spring:
         max-idle: 8
         min-idle: 0
         max-wait: -1
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      acks: all
+      retries: 3
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 1
+    consumer:
+      group-id: nutrition-service
+      auto-offset-reset: earliest
+      enable-auto-commit: true
+
+# 事件系统配置
+app:
+  event:
+    provider: kafka  # 可选值: redis, kafka (默认: redis)
+    consumer:
+      enabled: true   # nutrition-service需要消费事件
+    kafka:
+      topic: domain-events  # Kafka Topic名称
 
 mybatis-plus:
   configuration:

@@ -2,6 +2,7 @@ package com.example.diet.event;
 
 import com.example.shared.event.DomainEvent;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
@@ -10,27 +11,28 @@ import java.time.LocalDate;
  * 当用户添加饮食记录时发布此事件，用于通知其他服务进行相应处理
  */
 @Getter
+@NoArgsConstructor  // Jackson反序列化需要
 public class DietRecordAddedEvent extends DomainEvent {
 
     /**
      * 用户ID
      */
-    private final Long userId;
+    private Long userId;
 
     /**
      * 饮食记录ID
      */
-    private final Long dietRecordId;
+    private Long dietRecordId;
 
     /**
      * 记录日期
      */
-    private final LocalDate recordDate;
+    private LocalDate recordDate;
 
     /**
      * 餐次类型
      */
-    private final String mealType;
+    private String mealType;
 
     /**
      * 构造函数

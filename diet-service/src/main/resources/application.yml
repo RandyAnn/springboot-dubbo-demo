@@ -12,6 +12,24 @@ spring:
   redis:
     host: localhost
     port: 6379
+  # Kafka配置 - 仅用于事件发布
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 1
+
+# 事件系统配置
+app:
+  event:
+    provider: kafka  # 可选值: redis, kafka (默认: redis)
+    consumer:
+      enabled: false  # diet-service只发布事件，不消费事件
+    kafka:
+      topic: domain-events  # Kafka Topic名称
 
 mybatis-plus:
   mapper-locations: classpath:/mapper/*.xml
