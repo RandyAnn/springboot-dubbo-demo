@@ -35,7 +35,7 @@ public class KafkaEventListenerContainer implements EventListenerContainer, Init
      * Kafka监听器方法
      * 使用配置文件中的topic和group-id
      */
-    @KafkaListener(topics = "${app.event.kafka.topic:domain-events}", 
+    @KafkaListener(topics = "${app.event.channel:domain-events}",
                    groupId = "${spring.kafka.consumer.group-id:default-group}")
     public void handleEvent(ConsumerRecord<String, DomainEvent> record) {
         try {
@@ -44,7 +44,7 @@ public class KafkaEventListenerContainer implements EventListenerContainer, Init
             int partition = record.partition();
             long offset = record.offset();
 
-            log.debug("Received event from Kafka topic '{}', partition {}, offset {}", 
+            log.debug("Received event from Kafka topic '{}', partition {}, offset {}",
                      topic, partition, offset);
 
             if (event != null) {
@@ -58,15 +58,15 @@ public class KafkaEventListenerContainer implements EventListenerContainer, Init
                             @SuppressWarnings("rawtypes")
                             DomainEventHandler domainEventHandler = (DomainEventHandler) handler;
                             if (domainEventHandler.supports(event.getClass())) {
-                                log.debug("Dispatching event {} to handler {}", 
-                                         event.getClass().getSimpleName(), 
+                                log.debug("Dispatching event {} to handler {}",
+                                         event.getClass().getSimpleName(),
                                          handler.getClass().getName());
                                 domainEventHandler.onMessage(event);
                             }
                         } else {
                             // 对于非 DomainEventHandler 的通用 MessageHandler，直接调用
-                            log.debug("Dispatching event {} to generic handler {}", 
-                                     event.getClass().getSimpleName(), 
+                            log.debug("Dispatching event {} to generic handler {}",
+                                     event.getClass().getSimpleName(),
                                      handler.getClass().getName());
                             handler.onMessage(event);
                         }
@@ -97,6 +97,6 @@ public class KafkaEventListenerContainer implements EventListenerContainer, Init
     @Override
     public void afterPropertiesSet() throws Exception {
         start();
-        log.info("Subscribed to Kafka topic: ${app.event.kafka.topic:domain-events}");
+        log.info("Subscribed to Kafka topic: ${app.event.channel:domain-events}");
     }
-} 
+}

@@ -35,14 +35,57 @@ spring:
       auto-offset-reset: earliest
       enable-auto-commit: true
 
-# 事件系统配置
+# ==================== 事件系统配置 ====================
 app:
   event:
+    # 事件提供者类型：redis（默认）或 kafka
     provider: kafka  # 可选值: redis, kafka (默认: redis)
+
+    # 统一的事件channel/topic名称
+    # Redis使用此名称作为pub/sub channel
+    # Kafka使用此名称作为topic
+    channel: domain-events  # 统一的事件channel/topic名称
+
+    # 消费者配置
     consumer:
-      enabled: true   # nutrition-service需要消费事件
+      # 是否启用事件消费（默认：false）
+      # nutrition-service需要消费事件进行营养分析
+      enabled: true
+
+    # 线程池配置（用于事件监听器）
+    thread-pool:
+      core-size: 8              # 核心线程数（默认：8）
+      max-size: 16              # 最大线程数（默认：16）
+      queue-capacity: 2000      # 队列容量（默认：2000）
+      name-prefix: "event-listener-"  # 线程名前缀（默认：event-listener-）
+
+    # Kafka特定配置
     kafka:
-      topic: domain-events  # Kafka Topic名称
+      # 并发消费者数量（默认：5）
+      concurrency: 5
+
+      # 信任的包列表（用于反序列化安全）
+      trusted-packages:
+        - com.example.shared.event
+        - com.example.diet.event
+        - com.example.nutrition.event
+
+# ==================== 缓存系统配置 ====================
+  cache:
+    # 本地缓存配置（Caffeine）
+    local:
+      expire-after-write: 15m   # 写入后过期时间（默认：15分钟）
+      maximum-size: 20000       # 最大缓存条目数（默认：20000）
+
+    # Redis缓存配置
+    redis:
+      ttl: 45m                  # 缓存TTL（默认：45分钟）
+
+    # 异步缓存操作线程池配置
+    async:
+      core-pool-size: 8         # 核心线程池大小（默认：8）
+      max-pool-size: 16         # 最大线程池大小（默认：16）
+      queue-capacity: 1000      # 队列容量（默认：1000）
 
 mybatis-plus:
   configuration:

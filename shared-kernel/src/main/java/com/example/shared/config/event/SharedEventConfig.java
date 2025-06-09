@@ -1,5 +1,6 @@
 package com.example.shared.config.event;
 
+import com.example.shared.config.properties.EventProperties;
 import com.example.shared.event.EventListenerContainer;
 import com.example.shared.event.EventPublisher;
 import com.example.shared.event.MessageHandler;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -38,6 +40,15 @@ import java.util.concurrent.Executor;
 @EnableKafka
 public class SharedEventConfig {
 
+    /**
+     * 事件系统配置属性
+     */
+    @Bean
+    @ConfigurationProperties(prefix = "app.event")
+    public EventProperties eventProperties() {
+        return new EventProperties();
+    }
+
     // ==================== Redis 配置 ====================
 
     /**
@@ -46,8 +57,9 @@ public class SharedEventConfig {
     @Bean
     @ConditionalOnProperty(name = "app.event.provider", havingValue = "redis", matchIfMissing = true)
     public EventPublisher redisEventPublisher(@Qualifier("eventRedisTemplate") RedisTemplate<String, Object> eventRedisTemplate,
-                                            @Qualifier("eventObjectMapper") ObjectMapper eventObjectMapper) {
-        return new RedisEventPublisher(eventRedisTemplate, eventObjectMapper);
+                                            @Qualifier("eventObjectMapper") ObjectMapper eventObjectMapper,
+                                            EventProperties eventProperties) {
+        return new RedisEventPublisher(eventRedisTemplate, eventObjectMapper, eventProperties.getChannel());
     }
 
     /**
@@ -75,10 +87,11 @@ public class SharedEventConfig {
             RedisMessageListenerContainer redisContainer,
             @Qualifier("eventObjectMapper") ObjectMapper eventObjectMapper,
             @Qualifier("eventRedisTemplate") RedisTemplate<String, Object> eventRedisTemplate,
+            EventProperties eventProperties,
             List<MessageHandler> messageHandlers) {
 
         RedisEventListenerContainer container = new RedisEventListenerContainer(
-            redisContainer, eventObjectMapper, eventRedisTemplate);
+            redisContainer, eventObjectMapper, eventRedisTemplate, eventProperties.getChannel());
 
         if (messageHandlers != null) {
             messageHandlers.forEach(container::registerHandler);
@@ -122,13 +135,15 @@ public class SharedEventConfig {
     @Bean
     @ConditionalOnExpression("'${app.event.provider:redis}'.equals('kafka') && '${app.event.consumer.enabled:false}'.equals('true')")
     public ConsumerFactory<String, Object> kafkaConsumerFactory(KafkaProperties kafkaProperties,
-                                                               @Qualifier("eventObjectMapper") ObjectMapper eventObjectMapper) {
+                                                               @Qualifier("eventObjectMapper") ObjectMapper eventObjectMapper,
+                                                               EventProperties eventProperties) {
         Map<String, Object> props = kafkaProperties.buildConsumerProperties();
 
         // 配置JsonDeserializer使用事件专用ObjectMapper
         JsonDeserializer<Object> jsonDeserializer = new JsonDeserializer<>(eventObjectMapper);
-        // 设置信任的包
-        jsonDeserializer.addTrustedPackages("com.example.shared.event", "com.example.diet.event", "com.example.nutrition.event");
+        // 设置信任的包 - 使用配置属性
+        String[] trustedPackages = eventProperties.getKafka().getTrustedPackages().toArray(new String[0]);
+        jsonDeserializer.addTrustedPackages(trustedPackages);
 
         DefaultKafkaConsumerFactory<String, Object> factory = new DefaultKafkaConsumerFactory<>(props);
         factory.setValueDeserializer(jsonDeserializer);
@@ -142,14 +157,14 @@ public class SharedEventConfig {
     @Bean
     @ConditionalOnExpression("'${app.event.provider:redis}'.equals('kafka') && '${app.event.consumer.enabled:false}'.equals('true')")
     public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(
-            ConsumerFactory<String, Object> consumerFactory) {
+            ConsumerFactory<String, Object> consumerFactory, EventProperties eventProperties) {
 
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
 
-        // 并发配置 - 可以通过配置文件控制
-        factory.setConcurrency(3);
+        // 并发配置 - 使用配置属性
+        factory.setConcurrency(eventProperties.getKafka().getConcurrency());
 
         // 错误处理
         factory.setErrorHandler(new SeekToCurrentErrorHandler());
@@ -244,12 +259,13 @@ public class SharedEventConfig {
      */
     @Bean
     @ConditionalOnProperty(name = "app.event.consumer.enabled", havingValue = "true")
-    public Executor messageListenerExecutor() {
+    public Executor messageListenerExecutor(EventProperties eventProperties) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(1000);
-        executor.setThreadNamePrefix("event-listener-");
+        EventProperties.ThreadPool config = eventProperties.getThreadPool();
+        executor.setCorePoolSize(config.getCoreSize());
+        executor.setMaxPoolSize(config.getMaxSize());
+        executor.setQueueCapacity(config.getQueueCapacity());
+        executor.setThreadNamePrefix(config.getNamePrefix());
         executor.setRejectedExecutionHandler((r, exec) -> {
             System.err.println("Task rejected from event-listener: " + r.toString());
         });

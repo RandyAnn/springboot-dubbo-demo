@@ -1,9 +1,11 @@
 package com.example.shared.config.cache;
 
 import com.example.shared.cache.AsyncTwoLevelCache;
+import com.example.shared.config.properties.CacheProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Primary;
@@ -33,16 +35,26 @@ import java.util.concurrent.TimeUnit;
 public class SharedCacheConfig {
 
     /**
+     * 缓存系统配置属性
+     */
+    @Bean
+    @ConfigurationProperties(prefix = "app.cache")
+    public CacheProperties cacheProperties() {
+        return new CacheProperties();
+    }
+
+    /**
      * 配置本地缓存管理器 (Caffeine)
      * 使用动态缓存创建，支持任意缓存名称
      */
     @Bean
-    public CacheManager caffeineCacheManager() {
+    public CacheManager caffeineCacheManager(CacheProperties cacheProperties) {
         CaffeineCacheManager mgr = new CaffeineCacheManager();
+        CacheProperties.Local config = cacheProperties.getLocal();
         mgr.setCaffeine(Caffeine.newBuilder()
-                .expireAfterWrite(10, TimeUnit.MINUTES)  // 统一的过期时间
-                .maximumSize(10_000)                     // 统一的最大条目数
-                .recordStats());                         // 启用统计
+                .expireAfterWrite(config.getExpireAfterWrite())  // 使用配置的过期时间
+                .maximumSize(config.getMaximumSize())            // 使用配置的最大条目数
+                .recordStats());                                 // 启用统计
         return mgr;
     }
 
@@ -52,12 +64,13 @@ public class SharedCacheConfig {
      */
     @Bean
     public CacheManager redisCacheManager(RedisConnectionFactory connectionFactory,
-                                         @Qualifier("redisObjectMapper") ObjectMapper redisObjectMapper) {
+                                         @Qualifier("redisObjectMapper") ObjectMapper redisObjectMapper,
+                                         CacheProperties cacheProperties) {
         // 使用配置好的Redis专用ObjectMapper创建序列化器，支持Java 8日期时间类型和类型信息
         GenericJackson2JsonRedisSerializer jsonRedisSerializer = new GenericJackson2JsonRedisSerializer(redisObjectMapper);
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(30))  // 统一的过期时间
+                .entryTtl(cacheProperties.getRedis().getTtl())  // 使用配置的过期时间
                 .computePrefixWith(name -> name + "::")  // cacheName::key 格式
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(jsonRedisSerializer)
@@ -72,10 +85,14 @@ public class SharedCacheConfig {
      * 配置异步缓存操作的线程池
      */
     @Bean
-    public Executor cacheAsyncExecutor() {
+    public Executor cacheAsyncExecutor(CacheProperties cacheProperties) {
+        CacheProperties.Async config = cacheProperties.getAsync();
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                5, 10, 60, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(1000),
+                config.getCorePoolSize(),
+                config.getMaxPoolSize(),
+                config.getKeepAliveSeconds(),
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(config.getQueueCapacity()),
                 r -> {
                     Thread t = new Thread(r, "cache-async");
                     t.setDaemon(true);

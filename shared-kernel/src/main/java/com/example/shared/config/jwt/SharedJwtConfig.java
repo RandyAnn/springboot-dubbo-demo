@@ -1,5 +1,6 @@
 package com.example.shared.config.jwt;
 
+import com.example.shared.config.properties.JwtProperties;
 import com.example.shared.util.JwtUtil;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -20,11 +21,5 @@ public class SharedJwtConfig {
     @ConditionalOnMissingBean
     public JwtUtil jwtUtil(JwtProperties jwtProperties, RedisTemplate<String, Object> redisTemplate) {
         return new JwtUtil(jwtProperties.getSecret(), jwtProperties.getExpiration(), redisTemplate);
-    }
-
-    @lombok.Data
-    public static class JwtProperties {
-        private String secret;
-        private long expiration = 86400000; // 默认值
     }
 }

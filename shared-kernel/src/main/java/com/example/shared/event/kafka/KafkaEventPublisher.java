@@ -18,7 +18,7 @@ public class KafkaEventPublisher implements EventPublisher {
 
     private static final Logger log = LoggerFactory.getLogger(KafkaEventPublisher.class);
 
-    @Value("${app.event.kafka.topic:domain-events}")
+    @Value("${app.event.channel:domain-events}")
     private String eventTopic;
 
     private final KafkaTemplate<String, DomainEvent> kafkaTemplate;
@@ -37,12 +37,12 @@ public class KafkaEventPublisher implements EventPublisher {
         try {
             // 使用事件类型作为分区键，确保同类型事件有序
             String partitionKey = event.getClass().getSimpleName();
-            
+
             log.info("Publishing event of type '{}' with ID '{}' to Kafka topic '{}'",
                      event.getClass().getSimpleName(), event.getEventId(), eventTopic);
 
             // 发送到Kafka Topic
-            ListenableFuture<SendResult<String, DomainEvent>> future = 
+            ListenableFuture<SendResult<String, DomainEvent>> future =
                 kafkaTemplate.send(eventTopic, partitionKey, event);
 
             // 添加回调处理
@@ -50,7 +50,7 @@ public class KafkaEventPublisher implements EventPublisher {
                 @Override
                 public void onSuccess(SendResult<String, DomainEvent> result) {
                     log.debug("Successfully published event: {} to partition: {}, offset: {}",
-                             event, result.getRecordMetadata().partition(), 
+                             event, result.getRecordMetadata().partition(),
                              result.getRecordMetadata().offset());
                 }
 
@@ -64,4 +64,4 @@ public class KafkaEventPublisher implements EventPublisher {
             log.error("Error publishing event {} to Kafka: {}", event, e.getMessage(), e);
         }
     }
-} 
+}

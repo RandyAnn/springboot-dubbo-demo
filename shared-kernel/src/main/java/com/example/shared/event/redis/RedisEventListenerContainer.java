@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -29,18 +30,18 @@ public class RedisEventListenerContainer implements EventListenerContainer, Init
     private final RedisMessageListenerContainer redisContainer;
     private final ObjectMapper eventObjectMapper; // 用于反序列化
     private final RedisTemplate<String, Object> redisTemplate; // 用于获取序列化器
+    private final String eventChannel; // 可配置的事件channel
 
     private final List<MessageHandler> handlers = new CopyOnWriteArrayList<>();
 
-    // 与Publisher一致的channel，实际项目中可以配置
-    private static final String DEFAULT_EVENT_CHANNEL = "domain-events";
-
     public RedisEventListenerContainer(RedisMessageListenerContainer redisContainer,
                                        @Qualifier("eventObjectMapper") ObjectMapper eventObjectMapper,
-                                       RedisTemplate<String, Object> redisTemplate) {
+                                       RedisTemplate<String, Object> redisTemplate,
+                                       @Value("${app.event.channel:domain-events}") String eventChannel) {
         this.redisContainer = redisContainer;
         this.eventObjectMapper = eventObjectMapper;
         this.redisTemplate = redisTemplate;
+        this.eventChannel = eventChannel;
     }
 
     @Override
@@ -72,8 +73,8 @@ public class RedisEventListenerContainer implements EventListenerContainer, Init
         // 使用 this 作为 MessageListener
         // RedisTemplate 已经配置了valueSerializer，我们用它来反序列化
         // MessageListenerAdapter 也可以用，但直接实现 MessageListener 更灵活处理原始 Message
-        redisContainer.addMessageListener(this, new ChannelTopic(DEFAULT_EVENT_CHANNEL));
-        log.info("Subscribed to Redis channel: {}", DEFAULT_EVENT_CHANNEL);
+        redisContainer.addMessageListener(this, new ChannelTopic(eventChannel));
+        log.info("Subscribed to Redis channel: {}", eventChannel);
         start(); // 自动启动监听
     }
 
