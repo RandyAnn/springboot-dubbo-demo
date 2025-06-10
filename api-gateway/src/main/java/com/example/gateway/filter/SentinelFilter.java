@@ -14,9 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -31,8 +29,6 @@ import java.io.IOException;
  * Sentinel限流过滤器
  * 在认证之前执行限流检查，确保限流优先级高于认证
  */
-@Component
-@Order(1) // 确保在其他过滤器之前执行
 public class SentinelFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(SentinelFilter.class);

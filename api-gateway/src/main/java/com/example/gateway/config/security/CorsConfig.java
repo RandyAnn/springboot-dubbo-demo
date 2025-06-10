@@ -1,5 +1,4 @@
-// api-gateway/src/main/java/com/example/gateway/config/CorsConfig.java
-package com.example.gateway.config;
+package com.example.gateway.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -7,9 +6,17 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+/**
+ * CORS跨域配置类
+ * 配置跨域访问策略，允许前端应用访问API
+ */
 @Configuration
 public class CorsConfig {
 
+    /**
+     * CORS过滤器配置
+     * 允许跨域请求访问API接口
+     */
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();

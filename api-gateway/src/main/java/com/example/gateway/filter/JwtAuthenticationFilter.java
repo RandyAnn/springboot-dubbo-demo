@@ -1,4 +1,4 @@
-package com.example.gateway.config;
+package com.example.gateway.filter;
 
 import com.example.shared.util.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -16,6 +16,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * JWT认证过滤器
+ * 负责验证JWT token并设置Spring Security认证上下文
+ */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;

@@ -1,4 +1,4 @@
-package com.example.gateway.config;
+package com.example.gateway.config.sentinel;
 
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
@@ -24,6 +24,7 @@ public class SentinelConfig {
 
     /**
      * 初始化Sentinel规则
+     * 在应用启动时加载限流和熔断规则
      */
     @PostConstruct
     public void initRules() {
@@ -33,6 +34,7 @@ public class SentinelConfig {
 
     /**
      * 初始化限流规则
+     * 根据配置文件中的规则设置API限流策略
      */
     private void initFlowRules() {
         if (!rateLimitProperties.isEnabled()) {
@@ -72,6 +74,7 @@ public class SentinelConfig {
 
     /**
      * 初始化熔断规则
+     * 根据配置文件中的规则设置服务熔断策略
      */
     private void initDegradeRules() {
         if (!rateLimitProperties.isEnabled() || !rateLimitProperties.getDegradation().isEnabled()) {
