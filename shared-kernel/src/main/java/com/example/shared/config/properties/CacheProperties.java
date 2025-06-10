@@ -1,7 +1,6 @@
 package com.example.shared.config.properties;
 
 import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
 
@@ -10,7 +9,6 @@ import java.time.Duration;
  * 统一管理缓存系统的所有配置项，包括本地缓存、Redis缓存、异步线程池等配置
  */
 @Data
-@ConfigurationProperties(prefix = "app.cache")
 public class CacheProperties {
 
     /**

@@ -5,6 +5,77 @@ spring:
   redis:
     host: localhost
     port: 6379
+  cloud:
+    sentinel:
+      transport:
+        dashboard: localhost:8080
+        port: 8719
+
+# 应用安全配置
+app:
+  security:
+    rate-limit:
+      enabled: true
+      qps-limit: 100
+      thread-limit: 50
+      circuit-breaker:
+        threshold: 0.5
+        min-request-amount: 5
+        stat-interval-ms: 1000
+        time-window: 10000
+        slow-call-ratio: 1.0
+        slow-call-rt: 4900
+      degradation:
+        enabled: true
+        grade: "RT"
+        count: 2000
+        time-window: 10
+        min-request-amount: 5
+        stat-interval-ms: 1000
+        slow-ratio-threshold: 1.0
+      rules:
+        - resource: "/api/auth/**"
+          grade: "QPS"
+          count: 10
+          control-behavior: "FAST_FAIL"
+          warm-up-period-sec: 10
+          max-queueing-time-ms: 500
+          cluster-mode: false
+        - resource: "/api/users/**"
+          grade: "QPS"
+          count: 20
+          control-behavior: "FAST_FAIL"
+          warm-up-period-sec: 10
+          max-queueing-time-ms: 500
+          cluster-mode: false
+        - resource: "/api/foods/**"
+          grade: "QPS"
+          count: 50
+          control-behavior: "FAST_FAIL"
+          warm-up-period-sec: 10
+          max-queueing-time-ms: 500
+          cluster-mode: false
+        - resource: "/api/diet/**"
+          grade: "QPS"
+          count: 30
+          control-behavior: "FAST_FAIL"
+          warm-up-period-sec: 10
+          max-queueing-time-ms: 500
+          cluster-mode: false
+        - resource: "/api/nutrition/**"
+          grade: "QPS"
+          count: 30
+          control-behavior: "FAST_FAIL"
+          warm-up-period-sec: 10
+          max-queueing-time-ms: 500
+          cluster-mode: false
+        - resource: "/api/files/**"
+          grade: "QPS"
+          count: 100
+          control-behavior: "FAST_FAIL"
+          warm-up-period-sec: 10
+          max-queueing-time-ms: 500
+          cluster-mode: false
 
 jwt:
   secret: your-secret-key-should-be-at-least-256-bits-long

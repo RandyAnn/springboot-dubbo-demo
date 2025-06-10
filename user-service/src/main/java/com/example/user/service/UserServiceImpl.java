@@ -25,6 +25,8 @@ import com.example.file.service.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+import com.example.shared.config.properties.PasswordPolicyProperties;
+import com.example.shared.util.PasswordPolicyUtil;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -38,6 +40,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordPolicyProperties passwordPolicyProperties;
 
     @DubboReference
     private FileService fileService;
@@ -47,9 +50,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     public UserServiceImpl(UserMapper userMapper,
                            PasswordEncoder passwordEncoder,
+                           PasswordPolicyProperties passwordPolicyProperties,
                            FileService fileService) {
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.passwordPolicyProperties = passwordPolicyProperties;
         this.fileService = fileService;
     }
 
@@ -106,6 +111,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (password == null || password.isEmpty()) {
             password = UUID.randomUUID().toString().substring(0, 8);
         }
+
+        // 验证密码策略
+        PasswordPolicyUtil.ValidationResult validationResult =
+            PasswordPolicyUtil.validatePassword(password, passwordPolicyProperties);
+        if (!validationResult.isValid()) {
+            throw new BusinessException(400, "密码不符合安全策略要求：" + validationResult.getErrorMessage());
+        }
+
         user.setPassword(passwordEncoder.encode(password));
 
         try {
@@ -157,6 +170,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         // 如果需要更新密码，单独处理
         if (command.getPassword() != null && !command.getPassword().isEmpty()) {
+            // 验证密码策略
+            PasswordPolicyUtil.ValidationResult validationResult =
+                PasswordPolicyUtil.validatePassword(command.getPassword(), passwordPolicyProperties);
+            if (!validationResult.isValid()) {
+                throw new BusinessException(400, "密码不符合安全策略要求：" + validationResult.getErrorMessage());
+            }
             updateUser.setPassword(passwordEncoder.encode(command.getPassword()));
         }
 
@@ -345,6 +364,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         if (newPassword == null || newPassword.isEmpty()) {
             throw new BusinessException(400, "新密码不能为空");
+        }
+
+        // 验证密码策略
+        PasswordPolicyUtil.ValidationResult validationResult =
+            PasswordPolicyUtil.validatePassword(newPassword, passwordPolicyProperties);
+        if (!validationResult.isValid()) {
+            throw new BusinessException(400, "密码不符合安全策略要求：" + validationResult.getErrorMessage());
         }
 
         User user = this.getById(userId);

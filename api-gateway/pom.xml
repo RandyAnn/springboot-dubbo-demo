@@ -89,6 +89,16 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- Spring Cloud Alibaba Sentinel 限流熔断 -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-alibaba-sentinel-gateway</artifactId>
+        </dependency>
+
         <!-- AWS S3 SDK 依赖 (用于Cloudflare R2) -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>

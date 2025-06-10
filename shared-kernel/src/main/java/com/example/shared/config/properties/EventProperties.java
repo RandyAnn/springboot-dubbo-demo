@@ -1,7 +1,6 @@
 package com.example.shared.config.properties;
 
 import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,7 +10,6 @@ import java.util.List;
  * 统一管理事件系统的所有配置项，包括provider、channel、consumer、线程池、Kafka等配置
  */
 @Data
-@ConfigurationProperties(prefix = "app.event")
 public class EventProperties {
 
     /**
@@ -91,7 +89,7 @@ public class EventProperties {
          */
         private List<String> trustedPackages = Arrays.asList(
             "com.example.shared.event",
-            "com.example.diet.event", 
+            "com.example.diet.event",
             "com.example.nutrition.event"
         );
     }
