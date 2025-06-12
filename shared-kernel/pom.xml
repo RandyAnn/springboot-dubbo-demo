@@ -31,7 +31,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
-            <optional>true</optional>
         </dependency>
 
         <!-- Redis -->
@@ -73,7 +72,6 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <optional>true</optional>
         </dependency>
 
         <!-- MyBatis Plus -->

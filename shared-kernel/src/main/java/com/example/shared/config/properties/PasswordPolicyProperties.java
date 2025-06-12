@@ -1,12 +1,14 @@
 package com.example.shared.config.properties;
 
 import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * 密码策略配置属性类
  * 统一管理密码安全策略的所有配置项，包括密码复杂度要求、长度限制等配置
  */
 @Data
+@ConfigurationProperties(prefix = "app.security.password")
 public class PasswordPolicyProperties {
 
     /**
