@@ -22,6 +22,7 @@
         <module>file-api-contracts</module>
         <module>diet-api-contracts</module>
         <module>nutrition-api-contracts</module>
+        <module>dashboard-api-contracts</module>
         <module>auth-service</module>
         <module>api-gateway</module>
         <module>file-service</module>
@@ -29,6 +30,7 @@
         <module>diet-service</module>
         <module>nutrition-service</module>
         <module>user-service</module>
+        <module>dashboard-service</module>
     </modules>
 
     <properties>
@@ -37,7 +39,6 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- ???? -->
         <dubbo.version>3.0.9</dubbo.version>
         <mybatis-plus.version>3.5.2</mybatis-plus.version>
         <jwt.version>0.11.5</jwt.version>
@@ -46,7 +47,11 @@
         <jsr310.version>2.13.5</jsr310.version>
         <spring-cloud-alibaba.version>2021.0.4.0</spring-cloud-alibaba.version>
 
-        <!-- ?????? -->
+        <!-- 监控相关版本 -->
+        <micrometer.version>1.9.5</micrometer.version>
+        <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
+        <zipkin.version>2.23.16</zipkin.version>
+
         <aws.sdk.version>2.29.52</aws.sdk.version>
         <commons-lang3.version>3.13.0</commons-lang3.version>
         <junit.version>5.9.3</junit.version>
@@ -134,8 +139,6 @@
                 <artifactId>jackson-datatype-jsr310</artifactId>
                 <version>${jsr310.version}</version>
             </dependency>
-
-            <!-- AWS SDK BOM -->
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>bom</artifactId>
@@ -143,15 +146,12 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-            <!-- Apache Commons -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
             </dependency>
-
-            <!-- Spring Cloud Alibaba Sentinel -->
+            <!-- Spring Cloud Alibaba Sentinel - 只保留核心依赖 -->
             <dependency>
                 <groupId>com.alibaba.cloud</groupId>
                 <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
@@ -162,10 +162,40 @@
                 <artifactId>spring-cloud-alibaba-sentinel-gateway</artifactId>
                 <version>${spring-cloud-alibaba.version}</version>
             </dependency>
+
+            <!-- Spring Cloud Gateway -->
             <dependency>
-                <groupId>com.alibaba.cloud</groupId>
-                <artifactId>spring-cloud-alibaba-sentinel-datasource</artifactId>
-                <version>${spring-cloud-alibaba.version}</version>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-gateway</artifactId>
+                <version>3.1.4</version>
+            </dependency>
+
+            <!-- 监控相关依赖 -->
+            <!-- 监控相关依赖 - 轻量级方案 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-actuator</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-prometheus</artifactId>
+                <version>${micrometer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash-logback-encoder.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.zipkin.brave</groupId>
+                <artifactId>brave</artifactId>
+                <version>${zipkin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.zipkin.reporter2</groupId>
+                <artifactId>zipkin-reporter</artifactId>
+                <version>${zipkin.version}</version>
             </dependency>
 
             <!-- ?????????? -->
@@ -197,6 +227,11 @@
             <dependency>
                 <groupId>com.example</groupId>
                 <artifactId>file-api-contracts</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.example</groupId>
+                <artifactId>dashboard-api-contracts</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

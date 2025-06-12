@@ -2,103 +2,130 @@ server:
   port: 8084
 
 spring:
-  redis:
-    host: localhost
-    port: 6379
+  main:
+    allow-bean-definition-overriding: true
+    web-application-type: reactive  # 明确指定为响应式应用
   cloud:
     sentinel:
       transport:
-        dashboard: localhost:8080
-        port: 8719
+        dashboard: localhost:8080  # Sentinel控制台地址
+        port: 8719                 # 与控制台通信端口
+      # Sentinel专门负责流量控制、熔断降级、系统保护
+      # 使用代码配置规则，不依赖外部数据源
+      eager: true  # 启动时立即初始化Sentinel
+    gateway:
+      # 全局CORS配置
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns: "*"
+            allowed-methods: "*"
+            allowed-headers: "*"
+            allow-credentials: true
+            max-age: 3600
+      # Gateway发现配置
+      discovery:
+        locator:
+          enabled: false  # 禁用服务发现路由，使用手动配置
+      # 路由配置
+      routes:
+        # 认证服务路由 - 端口8085
+        - id: auth_route
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/auth/**
 
-# 应用安全配置
-app:
-  security:
-    rate-limit:
-      enabled: true
-      qps-limit: 100
-      thread-limit: 50
-      circuit-breaker:
-        threshold: 0.5
-        min-request-amount: 5
-        stat-interval-ms: 1000
-        time-window: 10000
-        slow-call-ratio: 1.0
-        slow-call-rt: 4900
-      degradation:
-        enabled: true
-        grade: "RT"
-        count: 2000
-        time-window: 10
-        min-request-amount: 5
-        stat-interval-ms: 1000
-        slow-ratio-threshold: 1.0
-      rules:
-        - resource: "/api/auth/**"
-          grade: "QPS"
-          count: 10
-          control-behavior: "FAST_FAIL"
-          warm-up-period-sec: 10
-          max-queueing-time-ms: 500
-          cluster-mode: false
-        - resource: "/api/users/**"
-          grade: "QPS"
-          count: 20
-          control-behavior: "FAST_FAIL"
-          warm-up-period-sec: 10
-          max-queueing-time-ms: 500
-          cluster-mode: false
-        - resource: "/api/foods/**"
-          grade: "QPS"
-          count: 50
-          control-behavior: "FAST_FAIL"
-          warm-up-period-sec: 10
-          max-queueing-time-ms: 500
-          cluster-mode: false
-        - resource: "/api/diet/**"
-          grade: "QPS"
-          count: 30
-          control-behavior: "FAST_FAIL"
-          warm-up-period-sec: 10
-          max-queueing-time-ms: 500
-          cluster-mode: false
-        - resource: "/api/nutrition/**"
-          grade: "QPS"
-          count: 30
-          control-behavior: "FAST_FAIL"
-          warm-up-period-sec: 10
-          max-queueing-time-ms: 500
-          cluster-mode: false
-        - resource: "/api/files/**"
-          grade: "QPS"
-          count: 100
-          control-behavior: "FAST_FAIL"
-          warm-up-period-sec: 10
-          max-queueing-time-ms: 500
-          cluster-mode: false
+        # 用户服务路由 - 端口8086
+        - id: user_route
+          uri: http://localhost:8086
+          predicates:
+            - Path=/user/**
+        - id: admin_user_route
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/admin/users/**
 
+        # 食物服务路由 - 端口8087
+        - id: food_route
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/food/**
+        - id: admin_food_route
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/admin/food/**
+
+        # 饮食记录服务路由 - 端口8088
+        - id: diet_records_route
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/diet-records/**
+        - id: admin_diet_records_route
+          uri: http://localhost:8088
+          predicates:
+            - Path=/api/admin/diet-records/**
+
+        # 营养分析服务路由 - 端口8089
+        - id: nutrition_route
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/nutrition/**
+        - id: health_route
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/health/**
+        - id: admin_nutrition_route
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/admin/nutrition/**
+
+        # 文件服务路由 - 端口8090
+        - id: files_route
+          uri: http://localhost:8090
+          predicates:
+            - Path=/api/files/**
+        - id: admin_files_route
+          uri: http://localhost:8090
+          predicates:
+            - Path=/api/admin/files/**
+
+        # 仪表盘服务路由 - 端口8091
+        - id: admin_dashboard_route
+          uri: http://localhost:8091
+          predicates:
+            - Path=/api/admin/dashboard/**
+      # Gateway专注于路由转发，限流交给Sentinel处理
+
+# JWT配置
 jwt:
   secret: your-secret-key-should-be-at-least-256-bits-long
   expiration: 86400000
 
-
-dubbo:
-  application:
-    name: api-gateway
-  protocol:
-    name: dubbo
-    port: -1
-  registry:
-    address: zookeeper://localhost:2181
-  provider:
-    version: 3.1.0    # 服务提供者使用的版本
-  consumer:
-    version: 3.1.0    # 服务消费者默认使用的版本
-    timeout: 3000
-
-# 添加日志配置
+# 统一日志配置 - Gateway负责统一日志记录
 logging:
   level:
+    # 应用日志
     com.example.*: info
     com.example.common.cache: warn
     com.example.common.event.cache: warn
+    # Gateway模块日志
+    com.example.gateway.auth: info      # 身份认证模块
+    com.example.gateway.security: info  # 安全策略模块
+    com.example.gateway.protection: info # 流量保护模块
+    com.example.gateway.logging: info   # 统一日志模块
+    # Gateway路由日志
+    org.springframework.cloud.gateway: info
+    # Sentinel日志
+    com.alibaba.csp.sentinel: info
+    # 请求响应日志（可选，用于调试）
+    # reactor.netty.http.server: debug
+
+# 健康检查配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,sentinel
+  endpoint:
+    health:
+      show-details: when-authorized

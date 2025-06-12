@@ -2,7 +2,6 @@ package com.example.shared.util;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import java.util.Map;
 
 /**
@@ -20,12 +19,12 @@ public class SecurityContextUtil {
         if (authentication == null || !authentication.isAuthenticated()) {
             return null;
         }
-        
+
         Object principal = authentication.getPrincipal();
         if (principal instanceof Long) {
             return (Long) principal;
         }
-        
+
         return null;
     }
 
@@ -38,14 +37,14 @@ public class SecurityContextUtil {
         if (authentication == null || !authentication.isAuthenticated()) {
             return null;
         }
-        
+
         Object details = authentication.getDetails();
         if (details instanceof Map) {
             @SuppressWarnings("unchecked")
             Map<String, Object> detailsMap = (Map<String, Object>) details;
             return (String) detailsMap.get("username");
         }
-        
+
         return null;
     }
 
@@ -58,14 +57,14 @@ public class SecurityContextUtil {
         if (authentication == null || !authentication.isAuthenticated()) {
             return null;
         }
-        
+
         Object details = authentication.getDetails();
         if (details instanceof Map) {
             @SuppressWarnings("unchecked")
             Map<String, Object> detailsMap = (Map<String, Object>) details;
             return (String) detailsMap.get("role");
         }
-        
+
         return null;
     }
 
@@ -122,14 +121,14 @@ public class SecurityContextUtil {
         if (authentication == null || !authentication.isAuthenticated()) {
             return null;
         }
-        
+
         Object details = authentication.getDetails();
         if (details instanceof Map) {
             @SuppressWarnings("unchecked")
             Map<String, Object> detailsMap = (Map<String, Object>) details;
             return detailsMap.get(key);
         }
-        
+
         return null;
     }
 }

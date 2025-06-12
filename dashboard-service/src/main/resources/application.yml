@@ -1,0 +1,37 @@
+server:
+  port: 8091
+
+spring:
+  application:
+    name: dashboard-service
+  profiles:
+    active: dev
+
+# Dubbo配置
+dubbo:
+  application:
+    name: dashboard-service
+  registry:
+    address: zookeeper://localhost:2181
+  protocol:
+    name: dubbo
+    port: 20891
+  provider:
+    version: 3.1.0    # 服务提供者使用的版本
+  consumer:
+    version: 3.1.0    # 服务消费者默认使用的版本
+    timeout: 3000
+    retries: 0
+
+# JWT配置
+jwt:
+  secret: your-secret-key-should-be-at-least-256-bits-long
+  expiration: 86400000
+
+# 日志配置
+logging:
+  level:
+    com.example.*: INFO
+    com.example.shared.cache: WARN
+    com.example.shared.event.cache: WARN
+    org.apache.dubbo: WARN
