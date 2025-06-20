@@ -187,6 +187,34 @@ npm run serve
 - **API网关**: http://localhost:8084
 - **微信小程序**: 通过微信开发者工具预览
 
+## 🎬 项目演示
+
+### Web管理后台界面
+
+![管理后台界面](docs/admin_show.png)
+
+*Web管理后台提供完整的系统管理功能，包括用户管理、食物数据管理、饮食记录统计、营养分析报表等功能模块。界面采用现代化的设计风格，操作简洁直观。*
+
+### 微信小程序客户端界面
+
+![微信小程序界面](docs/wechat_client_show.png)
+
+*微信小程序客户端为用户提供便捷的饮食记录功能，支持食物搜索、营养查询、饮食记录、健康报告等核心功能。界面设计符合微信小程序规范，用户体验友好。*
+
+## 🔗 前端项目
+
+本项目的前端代码托管在独立的仓库中，请访问以下链接获取完整的前端源码：
+
+### Web管理后台前端
+- **项目地址**: [shikeyinxiang-front-admin](https://github.com/RandyAnn/shikeyinxiang-front-admin)
+- **技术栈**: Vue.js 2.6.14 + Element UI + Vuex + Vue Router
+- **功能**: 系统管理、用户管理、食物数据管理、饮食记录统计、营养分析报表
+
+### 微信小程序客户端
+- **项目地址**: [shikeyinxiang-front-wechat](https://github.com/RandyAnn/shikeyinxiang-front-wechat)
+- **技术栈**: uni-app + 微信小程序
+- **功能**: 食物搜索、营养查询、饮食记录、健康报告、个人中心
+
 ## 🔧 开发指南
 
 ### API文档
