@@ -11,11 +11,6 @@ import java.util.List;
  * 食物分类服务接口
  */
 public interface FoodCategoryService {
-    /**
-     * 获取所有食物分类
-     * @return 分类列表
-     */
-    List<FoodCategoryDTO> getAllCategories();
 
     /**
      * 分页查询食物分类
@@ -23,7 +18,7 @@ public interface FoodCategoryService {
      * @param size 每页大小
      * @return 分页结果
      */
-    PageResult<FoodCategoryDTO> getCategoriesByPage(Integer current, Integer size);
+    PageResult<FoodCategoryDTO> getCategories(Integer current, Integer size);
 
     /**
      * 根据ID获取食物分类

@@ -41,21 +41,8 @@ public class FoodCategoryServiceImpl extends ServiceImpl<FoodCategoryMapper, Foo
     }
 
     @Override
-    @Cacheable(value = "foodCategory", key = "'all'")
-    public List<FoodCategoryDTO> getAllCategories() {
-        LambdaQueryWrapper<FoodCategory> wrapper = new LambdaQueryWrapper<>();
-        wrapper.orderByAsc(FoodCategory::getSortOrder);
-
-        List<FoodCategory> categories = this.list(wrapper);
-        List<FoodCategoryDTO> categoryDTOs = categories.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-        return categoryDTOs;
-    }
-
-    @Override
     @Cacheable(value = "foodCategory", key = "'page_' + #current + '_size_' + #size")
-    public PageResult<FoodCategoryDTO> getCategoriesByPage(Integer current, Integer size) {
+    public PageResult<FoodCategoryDTO> getCategories(Integer current, Integer size) {
         // 构建分页查询
         IPage<FoodCategory> page = new Page<>(current, size);
         LambdaQueryWrapper<FoodCategory> wrapper = new LambdaQueryWrapper<>();

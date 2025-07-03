@@ -72,24 +72,14 @@ public class AdminFoodController {
     }
 
     /**
-     * 获取所有食物分类详情
-     */
-    @GetMapping("/categories")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<List<FoodCategoryDTO>>> getAllCategories() {
-        List<FoodCategoryDTO> categories = foodCategoryService.getAllCategories();
-        return ResponseEntity.ok(ApiResponse.success(categories));
-    }
-
-    /**
      * 分页查询食物分类
      */
-    @GetMapping("/category/page")
+    @GetMapping("/category")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<PageResult<FoodCategoryDTO>>> getCategoriesByPage(
+    public ResponseEntity<ApiResponse<PageResult<FoodCategoryDTO>>> getCategories(
             @RequestParam(value = "current", defaultValue = "1") Integer current,
             @RequestParam(value = "size", defaultValue = "15") Integer size) {
-        PageResult<FoodCategoryDTO> result = foodCategoryService.getCategoriesByPage(current, size);
+        PageResult<FoodCategoryDTO> result = foodCategoryService.getCategories(current, size);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
